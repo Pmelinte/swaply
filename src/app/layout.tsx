@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import { Inter } from 'next/font/google';
+import './globals.css'; // <-- ACEASTA ESTE LINIA CRITICĂ
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Swaply',
-  description: 'Schimbă, nu cumpăra!',
+  description: 'Găsește partenerul potrivit pentru schimb de locuințe.',
 };
 
 export default function RootLayout({
@@ -13,9 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ro">
-      <body className="bg-gray-50 text-gray-900">
-        <div className="container mx-auto max-w-lg p-4">{children}</div>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
