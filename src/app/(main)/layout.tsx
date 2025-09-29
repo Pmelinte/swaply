@@ -6,9 +6,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="pb-20">
-      <main>{children}</main>
+    <>
+      <main className="flex-1 pb-20">{children}</main>
       <BottomNav />
-    </div>
+    </>
   );
 }
