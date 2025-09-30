@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { useI18n } from '@/lib/i18n';
 
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === '/' || pathname === '';
   const isAuth = pathname?.startsWith('/login') || pathname?.startsWith('/signup');
+  const { t } = useI18n();
 
   return (
     <header className="bg-white/70 backdrop-blur border-b border-slate-200">
@@ -16,20 +19,20 @@ export default function Header() {
 
         {isHome ? (
           <div className="flex items-center gap-3">
-            <Link href="/signup" className="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700">Înregistrare</Link>
-            <Link href="/login" className="rounded-md border border-blue-600 px-3 py-1.5 text-blue-700 hover:bg-blue-50">Autentificare</Link>
-            {/* TODO: Add language dropdown here */}
+            <Link href="/signup" className="rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700">{t.common.signup}</Link>
+            <Link href="/login" className="rounded-md border border-blue-600 px-3 py-1.5 text-blue-700 hover:bg-blue-50">{t.common.login}</Link>
+            <LanguageSwitcher />
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <Link href="/" className="hover:text-slate-900">Acasă</Link>
+            <Link href="/" className="hover:text-slate-900">{t.common.home}</Link>
             {!isAuth && (
               <>
-                <Link href="/signup" className="text-blue-600 hover:text-blue-700">Înregistrare</Link>
-                <Link href="/login" className="text-blue-600 hover:text-blue-700">Autentificare</Link>
+                <Link href="/signup" className="text-blue-600 hover:text-blue-700">{t.common.signup}</Link>
+                <Link href="/login" className="text-blue-600 hover:text-blue-700">{t.common.login}</Link>
               </>
             )}
-            {/* TODO: Add language dropdown here */}
+            <LanguageSwitcher />
           </div>
         )}
       </nav>
