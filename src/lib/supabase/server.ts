@@ -1,31 +1,21 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
-export function createClient() {
+export function getServerSupabase() {
   const cookieStore = cookies();
-
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          // Aici este modificarea corectă. Forțăm tipul de date.
-          return (cookieStore as any).get(name)?.value;
+          return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            (cookieStore as any).set({ name, value, ...options });
-          } catch (error) {
-            // Ignorăm erorile în Server Components, conform documentației.
-          }
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
         },
-        remove(name: string, options: CookieOptions) {
-          try {
-            (cookieStore as any).set({ name, value: '', ...options });
-          } catch (error) {
-            // Ignorăm erorile în Server Components, conform documentației.
-          }
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: "", maxAge: 0, ...options });
         },
       },
     }
