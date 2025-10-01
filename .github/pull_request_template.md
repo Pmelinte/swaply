@@ -1,46 +1,15 @@
-name: CI
+## Rezumat
+Descrie pe scurt ce rezolvă acest PR.
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
+## Ce s-a schimbat
+- [scurtă listă a modificărilor]
 
-permissions:
-  contents: read
+## Screenshots / Demo (opțional)
+[atașează capturi/gif]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Typecheck
-        run: npm run typecheck --if-present
-
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: Build
-        env:
-          NEXT_PUBLIC_SITE_URL: http://localhost:3000
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: anon
-          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: demo
-          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: demo
-        run: npx next build
+## Checklist
+- [ ] CI trece (typecheck, lint, build)
+- [ ] Am actualizat documentația/README dacă a fost nevoie
+- [ ] i18n: am adăugat/actualizat traducerile necesare
+- [ ] Am verificat Vercel preview (link în Checks)
+- [ ] Gata de “Squash and merge” (sau Enable auto-merge)
