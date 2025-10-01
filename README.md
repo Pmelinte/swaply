@@ -16,3 +16,4 @@ pnpm dev
 
 ## Notes
 - If Google Fonts are blocked in CI, the app falls back to system fonts.
+- 
