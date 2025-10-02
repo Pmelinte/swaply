@@ -12,28 +12,28 @@ export default function HomePage() {
       {/* VERCEL DEBUG: If you see this, the build worked */}
       <div className="hidden">{buildTimestamp}</div>
       
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
                 🔄 Swaply - Platformă Schimb Obiecte ✨ [VERCEL BUILD SUCCESS]
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
                 Schimbă obiecte cu alți utilizatori și descoperă destinații noi! ✨
               </p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <Link
                 href="/login"
-                className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-center"
               >
                 Conectează-te
               </Link>
               <Link
                 href="/signup"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center"
               >
                 Înregistrează-te
               </Link>
@@ -42,20 +42,20 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Features Grid - Mobile Optimized */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           {/* Add Object */}
           <Link href="/obiecte/nou">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow cursor-pointer">
-              <div className="text-4xl mb-4">📦</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow cursor-pointer transform hover:scale-105">
+              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">📦</div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                 Adaugă Obiect Nou
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                 Publică un obiect pe care vrei să-l schimbi cu altceva util.
               </p>
-              <div className="text-blue-600 font-medium">
+              <div className="text-blue-600 font-medium text-sm sm:text-base">
                 Începe acum →
               </div>
             </div>
@@ -63,15 +63,15 @@ export default function HomePage() {
 
           {/* View Requests */}
           <Link href="/cereri">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow cursor-pointer">
-              <div className="text-4xl mb-4">📋</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow cursor-pointer transform hover:scale-105">
+              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">📋</div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                 Cererile Mele
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                 Gestionează cererile de schimb primite și trimise.
               </p>
-              <div className="text-blue-600 font-medium">
+              <div className="text-blue-600 font-medium text-sm sm:text-base">
                 Vezi cereri →
               </div>
             </div>
@@ -213,39 +213,39 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-12 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        {/* Quick Actions - Mobile Optimized */}
+        <div className="mt-8 sm:mt-12 text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
             🚀 Acțiuni Rapide
           </h2>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3 sm:gap-4">
             <Link
               href="/obiecte/nou"
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
             >
               📦 Adaugă primul obiect
             </Link>
             <Link
               href="/signup"
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              className="px-4 sm:px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm sm:text-base"
             >
               👤 Creează cont
             </Link>
             <Link
               href="/cereri"
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              className="px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm sm:text-base"
             >
               📋 Vezi toate cererile
             </Link>
           </div>
         </div>
 
-        {/* Development Info */}
-        <div className="mt-12 bg-gray-100 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+        {/* Development Info - Mobile Optimized */}
+        <div className="mt-8 sm:mt-12 bg-gray-100 rounded-xl p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
             🛠️ Informații Dezvoltare
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
             <div>
               <div className="font-medium text-gray-900">Frontend:</div>
               <div>Next.js 15, TypeScript, TailwindCSS</div>
