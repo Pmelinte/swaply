@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+// FORCE VERCEL REDEPLOY - Dashboard should show instead of Welcome page
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
