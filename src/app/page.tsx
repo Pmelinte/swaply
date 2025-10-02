@@ -4,12 +4,12 @@ import Link from 'next/link';
 
 // VERCEL FORCE DEPLOY: This should NEVER show "Welcome to Swaply" - DASHBOARD ONLY
 export default function HomePage() {
-  // Force Vercel to rebuild - timestamp marker
-  const buildTimestamp = '2025-10-02-FORCE-DASHBOARD';
+  // Force Vercel to rebuild - timestamp marker: 2025-10-02-FINAL-PUSH
+  const buildTimestamp = '2025-10-02-FINAL-DASHBOARD-DEPLOYMENT';
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* VERCEL DEBUG: If you see this, the build worked */}
+      {/* VERCEL DEBUG: If you see this, the final build worked */}
       <div className="hidden">{buildTimestamp}</div>
       
       {/* Header - Mobile Optimized */}
