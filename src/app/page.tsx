@@ -2,17 +2,23 @@
 
 import Link from 'next/link';
 
-// FORCE VERCEL REDEPLOY - Dashboard should show instead of Welcome page
+// VERCEL FORCE DEPLOY: This should NEVER show "Welcome to Swaply" - DASHBOARD ONLY
 export default function HomePage() {
+  // Force Vercel to rebuild - timestamp marker
+  const buildTimestamp = '2025-10-02-FORCE-DASHBOARD';
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      {/* VERCEL DEBUG: If you see this, the build worked */}
+      <div className="hidden">{buildTimestamp}</div>
+      
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                🔄 Swaply - Platformă Schimb Obiecte
+                🔄 Swaply - Platformă Schimb Obiecte ✨ [VERCEL BUILD SUCCESS]
               </h1>
               <p className="text-gray-600 mt-2">
                 Schimbă obiecte cu alți utilizatori și descoperă destinații noi! ✨
