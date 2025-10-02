@@ -1,21 +1,28 @@
 import { ChatInterface } from '@/components/ChatInterface';
 import { getServerSupabase } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+impo              <ChatInterface
+                swapRequestId={id}
+                currentUserId={currentUser.id}
+                otherUserId={otherUser.id}
+                otherUserName={otherUserName}
+                otherUserAvatar={otherUser.user_metadata?.avatar_url}
+              />direct } from 'next/navigation';
 
 interface ChatPageProps {
-  params: {
+  params: Promise<{
     id: string; // swap_request_id
-  };
+  }>;
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
+  const { id } = await params;
   const supabase = await getServerSupabase();
   
   // Get current user
   const { data: userData, error: userError } = await supabase.auth.getUser();
   
   if (userError || !userData?.user) {
-    redirect('/login?next=/chat/' + params.id);
+    redirect('/login?next=/chat/' + id);
   }
 
   const currentUser = userData.user;
