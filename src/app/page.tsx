@@ -14,7 +14,7 @@ export default function HomePage() {
                 🔄 Swaply - Platformă Schimb Obiecte
               </h1>
               <p className="text-gray-600 mt-2">
-                Schimbă obiecte cu alți utilizatori și descoperă destinații noi!
+                Schimbă obiecte cu alți utilizatori și descoperă destinații noi! ✨
               </p>
             </div>
             <div className="flex space-x-3">
