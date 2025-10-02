@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const next = url.searchParams.get("next") ?? "/";
 
   if (code) {
-    const supabase = getServerSupabase();
+    const supabase = await getServerSupabase();
     await supabase.auth.exchangeCodeForSession(code);
   }
 

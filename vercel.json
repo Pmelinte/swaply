@@ -1,1 +1,25 @@
-{"version":2,"framework":"nextjs","installCommand":"npm i --no-audit --no-fund","buildCommand":"NEXT_DISABLE_ESLINT=1 NEXT_TELEMETRY_DISABLED=1 next build"}
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+  "regions": ["fra1"],
+  "functions": {
+    "src/app/**/*.tsx": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_SITE_URL": "https://swaply-platform.vercel.app",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://demo.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "demo-key-for-testing",
+    "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "demo",
+    "NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "demo"
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
+}

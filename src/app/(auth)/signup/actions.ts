@@ -3,11 +3,11 @@
 import { getServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export async function signup(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+export async function signupUser(formData: FormData) {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
 
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
 
   const { error } = await supabase.auth.signUp({
     email,

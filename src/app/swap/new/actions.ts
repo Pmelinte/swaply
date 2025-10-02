@@ -19,7 +19,7 @@ export async function createSwap(formData: FormData) {
     redirect("/swap/new?error=invalid");
   }
 
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
