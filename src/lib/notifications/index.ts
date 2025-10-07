@@ -4,7 +4,7 @@ interface CreateNotificationParams {
   userId: string;
   title: string;
   message: string;
-  type: 'match' | 'message' | 'swap_request' | 'system';
+  type: 'match' | 'message' | 'swap_request' | 'system' | 'welcome' | 'rating' | 'travel' | 'achievement' | 'reminder' | 'promotional';
   data?: any;
 }
 
@@ -108,6 +108,68 @@ export async function notifySystemUpdate(userId: string, title: string, message:
     title,
     message,
     type: 'system'
+  });
+}
+
+export async function notifyWelcome(userId: string, userName: string) {
+  return createNotification({
+    userId,
+    title: 'Bun venit la Swaply! 👋',
+    message: `Salut ${userName}! Ești gata să începi primul schimb? Adaugă un obiect și descoperă potriviri unice.`,
+    type: 'welcome',
+    data: { userName }
+  });
+}
+
+export async function notifyFirstSwapAchievement(userId: string) {
+  return createNotification({
+    userId,
+    title: 'Primul schimb realizat! 🏆',
+    message: 'Felicitări! Ai completat primul tău schimb pe Swaply. Continuă să explorezi și să faci schimburi unice!',
+    type: 'achievement',
+    data: { achievement: 'first_swap' }
+  });
+}
+
+export async function notifyRatingReminder(userId: string, swapPartner: string, objectName: string) {
+  return createNotification({
+    userId,
+    title: 'Evaluează experiența ⭐',
+    message: `Cum a fost schimbul cu ${swapPartner} pentru "${objectName}"? Lasă o evaluare pentru a ajuta comunitatea.`,
+    type: 'rating',
+    data: { swapPartner, objectName }
+  });
+}
+
+export async function notifyWeeklyMatches(userId: string, matchCount: number) {
+  return createNotification({
+    userId,
+    title: 'Raport săptămânal 📊',
+    message: `Această săptămână am găsit ${matchCount} potriviri noi pentru obiectele tale. Vezi ce oportunități îți oferă!`,
+    type: 'system',
+    data: { matchCount, period: 'weekly' }
+  });
+}
+
+export async function notifyPromotionalEvent(userId: string, eventName: string, discount?: string) {
+  return createNotification({
+    userId,
+    title: `🎉 ${eventName}`,
+    message: discount 
+      ? `Nu rata oferta specială! ${discount} reducere la serviciile premium până la sfârșitul lunii.`
+      : 'Eveniment special în curs! Descoperă funcționalități noi și oportunități exclusive.',
+    type: 'promotional',
+    data: { eventName, discount }
+  });
+}
+
+export async function notifyObjectInterest(userId: string, objectName: string, interestedCount: number) {
+  return createNotification({
+    userId,
+    title: 'Obiectul tău e popular! 🔥',
+    message: `"${objectName}" a atras atenția! ${interestedCount} persoane sunt interesate de un schimb.`,
+    type: 'system',
+    data: { objectName, interestedCount }
   });
 }
 

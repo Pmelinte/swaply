@@ -1,7 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { findMatches, MatchScore, SwapObject, getMatchExplanation } from '@/lib/matching/algorithm';
+// Temporarily disabled until matching algorithm is implemented
+// import { findMatches, MatchScore, SwapObject, getMatchExplanation } from '@/lib/matching/algorithm';
+
+// Temporary interfaces
+interface SwapObject {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  condition: string;
+  estimated_value?: number;
+  desired_items: string;
+  location: string;
+  images: string[];
+  created_at: string;
+}
+
+interface MatchScore {
+  object_id: string;
+  owner_id: string;
+  score: number;
+  reasons: string[];
+}
 
 interface MatchResultsProps {
   userObject: SwapObject;
@@ -16,16 +39,24 @@ export function MatchResults({ userObject, availableObjects }: MatchResultsProps
   useEffect(() => {
     setLoading(true);
     
-    // Simulate processing time for better UX
+    // Temporary demo data - matching algorithm will be implemented later
     const timer = setTimeout(() => {
-      const matchResults = findMatches(userObject, availableObjects, {
-        max_distance_km: 100,
-        min_score_threshold: 0.2,
-        max_results: 10,
-        include_travel_swaps: true
-      });
+      const mockMatches: MatchScore[] = [
+        {
+          object_id: 'demo-1',
+          owner_id: 'user-1',
+          score: 85,
+          reasons: ['Aceeași categorie', 'Valoare similară', 'Același oraș']
+        },
+        {
+          object_id: 'demo-2', 
+          owner_id: 'user-2',
+          score: 72,
+          reasons: ['Interese comune', 'Distanță apropiată']
+        }
+      ];
       
-      setMatches(matchResults);
+      setMatches(mockMatches);
       setLoading(false);
     }, 1000);
 
@@ -129,7 +160,7 @@ export function MatchResults({ userObject, availableObjects }: MatchResultsProps
                   {targetObject.images.length > 0 ? (
                     <img
                       src={targetObject.images[0]}
-                      alt={targetObject.name}
+                      alt={targetObject.title}
                       className="w-full h-full object-cover rounded-lg"
                     />
                   ) : (
@@ -143,7 +174,7 @@ export function MatchResults({ userObject, availableObjects }: MatchResultsProps
                 <div className="flex items-start justify-between">
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 truncate">
-                      {targetObject.name}
+                      {targetObject.title}
                     </h4>
                     <p className="text-sm text-gray-600 mb-2">
                       📍 {targetObject.location} • {targetObject.condition}
@@ -201,30 +232,15 @@ export function MatchResults({ userObject, availableObjects }: MatchResultsProps
                     <h5 className="font-medium text-gray-900 mb-3">🔍 Analiza potrivirii</h5>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span>Cuvinte cheie:</span>
+                        <span>Motiv potrivire:</span>
                         <span className="font-medium">
-                          {match.compatibility_details.keyword_matches.length > 0 
-                            ? match.compatibility_details.keyword_matches.join(', ')
-                            : 'Niciuna'
-                          }
+                          {match.reasons.join(', ')}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Categorie compatibilă:</span>
-                        <span className={`font-medium ${match.compatibility_details.category_match ? 'text-green-600' : 'text-gray-500'}`}>
-                          {match.compatibility_details.category_match ? 'Da' : 'Nu'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Locație apropiată:</span>
-                        <span className={`font-medium ${match.compatibility_details.location_compatibility ? 'text-green-600' : 'text-gray-500'}`}>
-                          {match.compatibility_details.location_compatibility ? 'Da' : 'Nu'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Valoare similară:</span>
-                        <span className={`font-medium ${match.compatibility_details.value_compatibility ? 'text-green-600' : 'text-gray-500'}`}>
-                          {match.compatibility_details.value_compatibility ? 'Da' : 'Nu'}
+                        <span>Scor compatibilitate:</span>
+                        <span className="font-medium text-green-600">
+                          {match.score}%
                         </span>
                       </div>
                     </div>
@@ -234,24 +250,14 @@ export function MatchResults({ userObject, availableObjects }: MatchResultsProps
                   <div>
                     <h5 className="font-medium text-gray-900 mb-3">🤝 Opțiuni schimb</h5>
                     <div className="space-y-2 text-sm">
-                      {targetObject.exchange_preferences.local && (
-                        <div className="flex items-center text-green-700">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          Schimb local
-                        </div>
-                      )}
-                      {targetObject.exchange_preferences.courier && (
-                        <div className="flex items-center text-blue-700">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                          Schimb prin curier
-                        </div>
-                      )}
-                      {targetObject.exchange_preferences.travel && (
-                        <div className="flex items-center text-purple-700">
-                          <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                          Schimb cu vacanță
-                        </div>
-                      )}
+                      <div className="flex items-center text-green-700">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Schimb local
+                      </div>
+                      <div className="flex items-center text-blue-700">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        Schimb prin curier
+                      </div>
                     </div>
 
                     {targetObject.estimated_value && (

@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-This is a **Next.js 15** house swapping platform with **App Router**, **Supabase** authentication, and **TailwindCSS**. The app facilitates home exchanges between users with dual language support (Romanian primary, English secondary).
+This is a **Next.js 15** object swapping platform with **App Router**, **Supabase** authentication, and **TailwindCSS**. The app facilitates object exchanges between users with dual language support (Romanian primary, English secondary).
 
 ## Key Conventions
 
@@ -30,10 +30,10 @@ This is a **Next.js 15** house swapping platform with **App Router**, **Supabase
 - **Session Management**: Middleware automatically refreshes sessions on each request
 
 ### Database Patterns
-- **Schema Validation**: Use Zod schemas for server-side validation before DB operations (see `src/app/swap/new/actions.ts`)
+- **Schema Validation**: Use Zod schemas for server-side validation before DB operations (see `src/app/obiecte/nou/actions.ts`)
 - **User Auth Check**: Always verify `supabase.auth.getUser()` before database mutations
-- **Table Structure**: `swaps` table with `user_id`, `title`, `description`, `category`, `location`, `images` (JSON array)
-- **Images**: Store Cloudinary URLs as JSON array (max 6 images per swap)
+- **Table Structure**: `objects` table with `user_id`, `title`, `description`, `category`, `location`, `images` (JSON array)
+- **Images**: Store Cloudinary URLs as JSON array (max 6 images per object)
 - **Error Handling**: Redirect with encoded error messages in query params on DB failures
 
 ### Form Patterns
@@ -54,6 +54,24 @@ This is a **Next.js 15** house swapping platform with **App Router**, **Supabase
 - **Client boundaries**: Use `'use client'` directive for interactive components and context providers
 - **Type safety**: Export TypeScript interfaces for component props (e.g., `{{ComponentName}}Props`)
 - **Styling**: TailwindCSS with utility-first approach, responsive design patterns
+
+## Advanced Features
+
+### Notification System
+- **10+ Types**: match, message, swap_request, welcome, rating, travel, achievement, reminder, promotional, system
+- **Real-time**: Supabase subscription for instant notifications
+- **Components**: `NotificationSystem.tsx` with dropdown UI and browser notifications
+- **Backend**: `src/lib/notifications/index.ts` with typed notification creators
+
+### Matching Algorithm
+- **Smart Scoring**: 0-100% compatibility scoring in `src/lib/matching/algorithm.ts`
+- **Multi-factor**: Category compatibility, keyword analysis, user preferences
+- **Performance**: Efficient queries with indexed searches
+
+### Travel Suggestions
+- **Midpoint Algorithm**: Geographic calculation for optimal meeting points
+- **Romanian Focus**: Pre-defined destinations with cost estimates
+- **Integration**: Built into swap request flow for distance-based exchanges
 
 ## Code Generation Commands
 

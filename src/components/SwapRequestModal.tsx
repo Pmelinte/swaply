@@ -3,7 +3,16 @@
 import { useState } from 'react';
 import { getBrowserSupabase } from '@/lib/supabase/client';
 import TravelSuggestions from '@/components/TravelSuggestions';
-import type { TravelSuggestion } from '@/lib/travel/suggestions';
+
+// Temporary interface until travel suggestions are implemented
+interface TravelSuggestion {
+  destination: string;
+  distance_km: number;
+  estimated_cost: number;
+  description: string;
+  activities: string[];
+  duration_days: number;
+}
 
 interface SwapRequestModalProps {
   swapItem: {
@@ -69,10 +78,10 @@ export default function SwapRequestModal({
         meeting_type: meetingType,
         travel_suggestion: selectedTravelSuggestion ? {
           destination: selectedTravelSuggestion.destination,
-          cost_estimate: selectedTravelSuggestion.cost_estimate,
-          accommodations: selectedTravelSuggestion.accommodations.slice(0, 3),
-          attractions: selectedTravelSuggestion.attractions.slice(0, 5),
-          transport_options: selectedTravelSuggestion.transport_options
+          estimated_cost: selectedTravelSuggestion.estimated_cost,
+          description: selectedTravelSuggestion.description,
+          activities: selectedTravelSuggestion.activities,
+          duration_days: selectedTravelSuggestion.duration_days
         } : null,
         status: 'pending'
       };
@@ -269,7 +278,7 @@ export default function SwapRequestModal({
           <div className="flex items-center space-x-2 mb-2">
             <span className="text-green-600">✅</span>
             <span className="font-medium text-green-800">
-              Destinația selectată: {selectedTravelSuggestion.destination.city}
+              Destinația selectată: {selectedTravelSuggestion.destination}
             </span>
           </div>
           <p className="text-sm text-green-700">
@@ -308,9 +317,9 @@ export default function SwapRequestModal({
           <div>
             <div className="font-medium text-gray-900">Destinația propusă:</div>
             <div className="text-gray-600">
-              📍 {selectedTravelSuggestion.destination.city} 
+              📍 {selectedTravelSuggestion.destination}
               <span className="ml-2 text-sm">
-                ({selectedTravelSuggestion.cost_estimate.total.min} - {selectedTravelSuggestion.cost_estimate.total.max} {selectedTravelSuggestion.cost_estimate.currency})
+                ({selectedTravelSuggestion.estimated_cost} RON)
               </span>
             </div>
           </div>

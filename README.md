@@ -1,22 +1,24 @@
 # Swaply
 
-Swaply este o aplicație web care facilitează schimbul de locuințe între utilizatori, fie pentru vacanțe, fie pe termen mediu. Platforma conectează oameni cu nevoi complementare într-un mod eficient și transparent.
+Swaply este o aplicație web care facilitează schimbul de obiecte între utilizatori. Platforma conectează oameni cu nevoi complementare într-un mod eficient și transparent, permițând schimbul de bunuri utile fără a implica bani.
 
 ## 🎯 Despre Proiect
 
 Swaply oferă o platformă unde utilizatorii pot:
-- Găsi parteneri potriviți pentru schimb de locuințe
+- Adăuga obiecte pe care doresc să le schimbe
+- Găsi parteneri potriviți pentru schimb de obiecte
 - Comunica și negocia detaliile schimbului
 - Gestiona profil personal și preferințe
 - Lăsa feedback și construi reputație în comunitate
 
 ### Misiunea Noastră
-Să conectăm oameni cu nevoi complementare într-un mod cât mai eficient și prietenos, oferind instrumentele potrivite pentru a descoperi, comunica și confirma un schimb.
+Să conectăm oameni cu nevoi complementare într-un mod cât mai eficient și prietenos, oferind instrumentele potrivite pentru a descoperi, comunica și confirma un schimb de obiecte.
 
 ### De ce Swaply?
-- Economisești bani și timp — eviți costurile cazării tradiționale
-- Experiență autentică — descoperi locuri noi prin ochii localnicilor
-- Control total — alegi perioadele și preferințele care ți se potrivesc
+- Economisești bani — obții lucruri utile fără să plătești
+- Sustenabilitate — reduci risipa prin reutilizare
+- Comunitate — construiești relații prin schimburi reciproce
+- Control total — alegi ce schimbi și cu cine
 
 ## 🌍 Internationalizare (i18n)
 - Româna este limba implicită; Engleza este limba secundară
@@ -27,13 +29,32 @@ Să conectăm oameni cu nevoi complementare într-un mod cât mai eficient și p
 Notă: Dacă Google Fonts sunt blocate în CI, aplicația revine automat la fonturile de sistem.
 
 ## 🚀 Tehnologii Utilizate
-- Framework: [Next.js 15](https://nextjs.org/) (App Router)
-- UI/Styling: [TailwindCSS 4](https://tailwindcss.com/)
-- Autentificare: [Supabase Auth](https://supabase.com/auth)
-- Bază de date: [Supabase](https://supabase.com/)
-- Limbaj: TypeScript
-- Linting: ESLint
-- Git Hooks: Husky
+
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **UI/Styling:** [TailwindCSS 4](https://tailwindcss.com/)
+- **Autentificare:** [Supabase Auth](https://supabase.com/auth)
+- **Bază de date:** [Supabase](https://supabase.com/) (PostgreSQL)
+- **Real-time:** Supabase Realtime pentru notificări instant
+- **Upload imagini:** [Cloudinary](https://cloudinary.com/)
+- **Limbaj:** TypeScript
+- **Linting:** ESLint
+- **Git Hooks:** Husky
+- **Deployment:** Vercel
+
+## 🗄️ Arhitectura Bazei de Date
+
+Schema completă cu 8 tabele principale:
+
+- **`objects`** - Obiectele disponibile pentru schimb
+- **`user_profiles`** - Profilele utilizatorilor extinse
+- **`swap_requests`** - Cererile de schimb între utilizatori
+- **`messages`** - Sistemul de chat real-time
+- **`notifications`** - 10+ tipuri de notificări
+- **`ratings`** - Evaluări și feedback
+- **`travel_suggestions`** - Sugestii destinații călătorie
+- **`categories`** - Categorii obiecte cu subcategorii
+
+Toate tabelele sunt protejate cu **Row Level Security (RLS)** policies pentru securitate maximă.
 
 ## 📋 Cerințe de Sistem
 - Node.js 20.x
@@ -71,6 +92,23 @@ npm run dev
 pnpm dev
 ```
 Aplicația va fi disponibilă la http://localhost:3000
+
+## 🚀 Deployment
+
+### Production Environment
+- **Platform**: Vercel
+- **URL**: [https://swaply-site.vercel.app](https://swaply-site.vercel.app)
+- **Status**: ✅ LIVE cu toate funcționalitățile
+- **Auto-deploy**: Din branch `main` cu CI/CD complet
+
+### Variabile de Mediu Production
+```env
+NEXT_PUBLIC_SITE_URL=https://swaply-site.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=your_production_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_production_anon_key
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_preset
+```
 
 ## 📜 Scripturi Disponibile
 - `npm run dev` — Pornește serverul de dezvoltare
@@ -118,27 +156,88 @@ npm run plop api
 
 ## 🌟 Funcționalități Principale
 
-### Autentificare
-- Înregistrare și autentificare prin email
-- Gestionare sesiune cu Supabase
+### Adăugare Obiecte
+- Formular cu 12+ categorii de obiecte
+- Upload imagini multiple (Cloudinary)
+- Descrieri detaliate și preferințe de schimb
 
-### Match & Chat
-- Căutare parteneri compatibili
-- Sistem de mesagerie în aplicație
-- Propuneri de schimb
+### Matching Inteligent
+- Algoritm de potrivire cu scoring 0-100%
+- Analiza keywords și compatibilitate categorii
+- Sugestii automate bazate pe preferințe
 
-### Profil
-- Completare profil utilizator
-- Adăugare preferințe și disponibilitate
-- Istoric schimburi
+### Comunicare Real-time
+- Chat instantaneu între utilizatori
+- Notificări în timp real (10+ tipuri)
+- System de mesagerie contextual pentru schimburi
 
-### Informații
-- Despre Swaply
-- Cum funcționează
-- Întrebări frecvente
-- Termeni și condiții
-- Politică de confidențialitate
-- Contact
+### Cereri de Schimb
+- Gestionare cereri primite și trimise
+- Filtrare și sortare avansată
+- Tracking status schimb
+
+### Travel Suggestions
+- Algoritm de găsire midpoint între locații
+- Sugestii destinații pentru schimburi la distanță
+- Estimări costuri și timp de călătorie
+
+### Profil & Reputație
+- Completare profil utilizator detaliat
+- Istoric schimburi și evaluări
+- Sistem de rating și feedback
+
+### Notificări Avansate
+- 10+ tipuri: match, mesaje, cereri, realizări
+- Notificări browser în timp real
+- Dashboard centralizat pentru toate alertele
+
+## 📊 Status Implementare
+
+### ✅ Funcționalități Complete (LIVE)
+
+**URL LIVE:** [https://swaply-site.vercel.app](https://swaply-site.vercel.app)
+
+#### 📦 Adăugare Obiecte (`/obiecte/nou`)
+- Formular cu 12+ categorii validate
+- Upload imagini multiple cu Cloudinary
+- Validare Zod server-side
+- Preferințe de schimb detaliate
+
+#### 🔔 Sistem Notificări Avansat
+- **10+ tipuri**: match, message, swap_request, welcome, rating, travel, achievement, reminder, promotional, system
+- Notificări browser în timp real
+- Dashboard centralizat cu dropdown UI
+- Supabase realtime subscriptions
+
+#### 🎯 Matching Algorithm Inteligent
+- Scoring 0-100% compatibility
+- Analiza keywords automată
+- Compatibilitate categorii
+- Performance optimizat cu indexe
+
+#### 💬 Chat Real-time (`/chat/demo`)
+- Mesaje instantanee cu Supabase
+- Read receipts și typing indicators
+- Context schimb integrat
+- UI responsive mobile
+
+#### ✈️ Travel Suggestions API
+- Algoritm midpoint geographic
+- Destinații România pre-definite
+- Estimări costuri și timp
+- Integrare în flow-ul de cereri
+
+#### 📋 Management Cereri (`/cereri`)
+- Cereri primite și trimise
+- Filtrare și sortare avansată
+- Tracking status în timp real
+- Acțiuni bulk
+
+### 🔄 În Dezvoltare
+- Sistem rating și feedback
+- Push notifications mobile
+- Optimizări performance avansate
+- Analytics și rapoarte
 
 ## 🧪 Testing & CI/CD
 Configurare CI prin GitHub Actions care rulează:

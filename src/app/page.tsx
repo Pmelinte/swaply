@@ -1,266 +1,277 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
-// VERCEL FORCE DEPLOY: This should NEVER show "Welcome to Swaply" - DASHBOARD ONLY
 export default function HomePage() {
-  // Force Vercel to rebuild - timestamp marker: 2025-10-02-FINAL-PUSH
-  const buildTimestamp = '2025-10-02-FINAL-DASHBOARD-DEPLOYMENT';
-  
+  // Simulăm statusul de autentificare (în viitor va veni din Supabase auth)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authStep, setAuthStep] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState('toate');
+  const userName = "Petru"; // Simulat - va veni din context utilizator
+
+  // Categories for map filtering
+  const categories = [
+    { id: 'toate', name: 'Toate', icon: '🌍' },
+    { id: 'sport', name: 'Sport', icon: '⚽' },
+    { id: 'arta', name: 'Artă', icon: '🎨' },
+    { id: 'it', name: 'IT', icon: '💻' },
+    { id: 'muzica', name: 'Muzică', icon: '🎵' },
+    { id: 'casa', name: 'Casă', icon: '🏠' }
+  ];
+
+  // Mock data pentru harta utilizatorilor activi
+  const activeUsers = [
+    { id: 1, lat: 44.4268, lng: 26.1025, category: 'it', name: 'Alex - MacBook Pro' },
+    { id: 2, lat: 46.7712, lng: 23.6236, category: 'sport', name: 'Maria - Bicicletă' },
+    { id: 3, lat: 45.7489, lng: 21.2087, category: 'muzica', name: 'Andrei - Chitară' },
+    { id: 4, lat: 47.1585, lng: 27.6014, category: 'arta', name: 'Ana - Set pictură' }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* VERCEL DEBUG: If you see this, the final build worked */}
-      <div className="hidden">{buildTimestamp}</div>
-      
-      {/* Header - Mobile Optimized */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                🔄 Swaply - Platformă Schimb Obiecte ✨ [VERCEL BUILD SUCCESS]
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      {/* Header Section */}
+      <div className="relative bg-white shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {isLoggedIn ? (
+            // Header pentru utilizatori logați
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Bine ai revenit, {userName}! 👋
               </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-2">
-                Schimbă obiecte cu alți utilizatori și descoperă destinații noi! ✨
+              <p className="text-gray-600 mb-6">
+                Gata să faci noi schimburi inteligente?
               </p>
+              
+              {/* Butoane rapide pentru utilizatori logați */}
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/obiecte/nou"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
+                >
+                  <span>📦</span>
+                  <span>Adaugă obiect</span>
+                </Link>
+                <Link
+                  href="/match"
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center space-x-2"
+                >
+                  <span>🎯</span>
+                  <span>Găsește potriviri</span>
+                </Link>
+                <Link
+                  href="/cereri"
+                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center space-x-2"
+                >
+                  <span>📋</span>
+                  <span>Vezi cereri</span>
+                </Link>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-              <Link
-                href="/login"
-                className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-center"
+          ) : (
+            // Header pentru vizitatori
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Schimbă, nu cumpăra
+              </h1>
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                Comunitate globală de schimburi inteligente. Redescoperă valoarea obiectelor tale și găsește exact ce îți trebuie prin schimb.
+              </p>
+              
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
               >
-                Conectează-te
-              </Link>
-              <Link
-                href="/signup"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center"
-              >
-                Înregistrează-te
-              </Link>
+                🚀 Autentifică-te sau Creează cont
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Features Grid - Mobile Optimized */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
-          {/* Add Object */}
-          <Link href="/obiecte/nou">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow cursor-pointer transform hover:scale-105">
-              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">📦</div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                Adaugă Obiect Nou
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-                Publică un obiect pe care vrei să-l schimbi cu altceva util.
-              </p>
-              <div className="text-blue-600 font-medium text-sm sm:text-base">
-                Începe acum →
-              </div>
-            </div>
-          </Link>
-
-          {/* View Requests */}
-          <Link href="/cereri">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow cursor-pointer transform hover:scale-105">
-              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">📋</div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                Cererile Mele
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-                Gestionează cererile de schimb primite și trimise.
-              </p>
-              <div className="text-blue-600 font-medium text-sm sm:text-base">
-                Vezi cereri →
-              </div>
-            </div>
-          </Link>
-
-          {/* Chat */}
-          <Link href="/chat/demo">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow cursor-pointer">
-              <div className="text-4xl mb-4">💬</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Chat Real-time
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Comunică instant cu alți utilizatori pentru schimburi.
-              </p>
-              <div className="text-blue-600 font-medium">
-                Demo chat →
-              </div>
-            </div>
-          </Link>
-
-          {/* Travel Suggestions Demo */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-            <div className="text-4xl mb-4">✈️</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Sugestii Călătorie
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Descoperă destinații pentru schimburi la distanță.
-            </p>
-            <button 
-              onClick={() => {
-                // Demo functionality - will be shown in modal
-                alert('Demo: Vezi componenta TravelSuggestions în acțiune când faci o cerere de schimb cu călătorie!');
-              }}
-              className="text-blue-600 font-medium hover:text-blue-700"
-            >
-              Vezi demo →
-            </button>
-          </div>
-
-          {/* Matching Algorithm Demo */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-            <div className="text-4xl mb-4">🎯</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Matching Inteligent
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Algoritm care găsește cele mai bune potriviri pentru tine.
-            </p>
-            <button 
-              onClick={() => {
-                alert('Demo: Algoritmul analizează ce ai + ce vrei și găsește potriviri perfecte cu scoring 0-100%!');
-              }}
-              className="text-blue-600 font-medium hover:text-blue-700"
-            >
-              Vezi algoritm →
-            </button>
-          </div>
-
-          {/* Database Schema */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-            <div className="text-4xl mb-4">🗄️</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Baza de Date
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Schema completă cu 8 tabele și relații complexe.
-            </p>
-            <button 
-              onClick={() => {
-                alert('Database: objects, user_profiles, swap_requests, messages, ratings, notifications, travel_suggestions, categories + RLS policies!');
-              }}
-              className="text-blue-600 font-medium hover:text-blue-700"
-            >
-              Vezi schema →
-            </button>
-          </div>
-        </div>
-
-        {/* Implementation Status */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            📊 Status Implementare
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Completed Features */}
-            <div>
-              <h3 className="text-lg font-semibold text-green-600 mb-4 flex items-center">
-                <span className="mr-2">✅</span>
-                Funcționalități Complete
-              </h3>
-              <ul className="space-y-3">
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>TypeScript + Next.js 15 setup complet</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>Formular adăugare obiecte cu validare</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>Schema baza de date cu 8 tabele</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>Algoritm matching cu scoring inteligent</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>Chat real-time cu Supabase</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>Travel Suggestions API complet</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Pending Features */}
-            <div>
-              <h3 className="text-lg font-semibold text-yellow-600 mb-4 flex items-center">
-                <span className="mr-2">🔄</span>
-                În Dezvoltare
-              </h3>
-              <ul className="space-y-3">
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                  <span>Sistem notificări push</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                  <span>Optimizare completă mobile</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions - Mobile Optimized */}
-        <div className="mt-8 sm:mt-12 text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-            🚀 Acțiuni Rapide
-          </h2>
-          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3 sm:gap-4">
-            <Link
-              href="/obiecte/nou"
-              className="px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
-            >
-              📦 Adaugă primul obiect
-            </Link>
-            <Link
-              href="/signup"
-              className="px-4 sm:px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm sm:text-base"
-            >
-              👤 Creează cont
-            </Link>
-            <Link
-              href="/cereri"
-              className="px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm sm:text-base"
-            >
-              📋 Vezi toate cererile
-            </Link>
-          </div>
-        </div>
-
-        {/* Development Info - Mobile Optimized */}
-        <div className="mt-8 sm:mt-12 bg-gray-100 rounded-xl p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
-            🛠️ Informații Dezvoltare
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Category Filter */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {isLoggedIn ? '🗺️ Obiecte disponibile aproape de tine' : '👥 Filtrează utilizatori activi după categorie'}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
-            <div>
-              <div className="font-medium text-gray-900">Frontend:</div>
-              <div>Next.js 15, TypeScript, TailwindCSS</div>
-            </div>
-            <div>
-              <div className="font-medium text-gray-900">Backend:</div>
-              <div>Supabase, PostgreSQL, Realtime</div>
-            </div>
-            <div>
-              <div className="font-medium text-gray-900">Features:</div>
-              <div>Auth, Chat, Travel API, Matching</div>
+          <div className="flex flex-wrap gap-3">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                  selectedCategory === category.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <span>{category.icon}</span>
+                <span>{category.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Map Section */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="h-96 bg-gradient-to-br from-green-100 to-blue-100 relative">
+            {/* Simulare hartă */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🗺️</div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  Hartă Interactivă Swaply
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {isLoggedIn 
+                    ? `Vedeți ${activeUsers.filter(u => selectedCategory === 'toate' || u.category === selectedCategory).length} obiecte în zona dumneavoastră`
+                    : `${activeUsers.filter(u => selectedCategory === 'toate' || u.category === selectedCategory).length} utilizatori activi în categoria "${categories.find(c => c.id === selectedCategory)?.name}"`
+                  }
+                </p>
+                
+                {/* Mock pins pe hartă */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                  {activeUsers
+                    .filter(user => selectedCategory === 'toate' || user.category === selectedCategory)
+                    .map((user) => (
+                      <div
+                        key={user.id}
+                        className="bg-white rounded-lg p-3 shadow-md border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer"
+                      >
+                        <div className="text-2xl mb-1">
+                          {categories.find(c => c.id === user.category)?.icon}
+                        </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                <div className="mt-6 text-sm text-gray-500">
+                  💡 Hartă interactivă cu Google Maps va fi integrată în curând
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Demo Login Toggle pentru testare */}
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => setIsLoggedIn(!isLoggedIn)}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+          >
+            🔄 Demo: {isLoggedIn ? 'Delogare' : 'Logare'} ({isLoggedIn ? 'Utilizator logat' : 'Vizitator'})
+          </button>
+        </div>
       </div>
+
+      {/* Authentication Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            {authStep === 1 ? (
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Alătură-te comunității Swaply! 🚀
+                </h3>
+                
+                <div className="space-y-4">
+                  <input
+                    type="email"
+                    placeholder="Adresa de email"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  
+                  <div className="space-y-3">
+                    <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                      Continuă cu Email
+                    </button>
+                    
+                    <div className="text-center text-gray-500">sau</div>
+                    
+                    <button className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center space-x-2">
+                      <span>🔴</span>
+                      <span>Continuă cu Google</span>
+                    </button>
+                    
+                    <button className="w-full px-4 py-3 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium flex items-center justify-center space-x-2">
+                      <span>📘</span>
+                      <span>Continuă cu Facebook</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex space-x-3">
+                  <button
+                    onClick={() => setShowAuthModal(false)}
+                    className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Anulează
+                  </button>
+                  <button
+                    onClick={() => setAuthStep(2)}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Continuă
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Ultimul pas! �
+                </h3>
+                
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Nume utilizator"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  
+                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Selectează țara</option>
+                    <option value="ro">🇷🇴 România</option>
+                    <option value="md">🇲🇩 Moldova</option>
+                    <option value="bg">🇧🇬 Bulgaria</option>
+                    <option value="hu">🇭🇺 Ungaria</option>
+                  </select>
+                  
+                  <label className="flex items-start space-x-3">
+                    <input type="checkbox" className="mt-1" />
+                    <span className="text-sm text-gray-600">
+                      Accept <Link href="/termeni" className="text-blue-600 hover:text-blue-700">termenii și condițiile</Link> și <Link href="/confidentialitate" className="text-blue-600 hover:text-blue-700">politica de confidențialitate</Link>
+                    </span>
+                  </label>
+                </div>
+                
+                <div className="mt-6 flex space-x-3">
+                  <button
+                    onClick={() => setAuthStep(1)}
+                    className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Înapoi
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAuthModal(false);
+                      setIsLoggedIn(true);
+                      setAuthStep(1);
+                    }}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Creează cont
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
