@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import NotificationSystem from './NotificationSystem';
+import { getBrowserSupabase } from '@/lib/supabase/client';
+import { useEffect } from 'react';
 
 interface MenuItem {
   id: string;
@@ -20,9 +23,20 @@ interface TopMenuProps {
 
 export default function TopMenu({ isLoggedIn = false, userName, notificationCount = 0 }: TopMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      const getUser = async () => {
+        const supabase = getBrowserSupabase();
+        const { data: { user } } = await supabase.auth.getUser();
+        setUserId(user?.id || null);
+      };
+      getUser();
+    }
+  }, [isLoggedIn]);
 
   const menuItems: MenuItem[] = isLoggedIn ? [
-    { id: 'notifications', label: 'Notificări', icon: '🔔', badge: notificationCount },
     { id: 'preferences', label: 'Preferințe AI', icon: '🤖', href: '/preferinte' },
     { id: 'language', label: 'Limba', icon: '🌍', href: '/limba' },
     { id: 'theme', label: 'Mod întunecat', icon: '🌙', action: 'toggle-theme' },
@@ -35,7 +49,14 @@ export default function TopMenu({ isLoggedIn = false, userName, notificationCoun
   ];
 
   return (
-    <div className="relative">
+    <div className="flex items-center space-x-2">
+      {/* Notification System for logged in users */}
+      {isLoggedIn && userId && (
+        <NotificationSystem userId={userId} />
+      )}
+      
+      {/* Main Menu */}
+      <div className="relative">
       {/* Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -43,13 +64,6 @@ export default function TopMenu({ isLoggedIn = false, userName, notificationCoun
         aria-label="Meniu principal"
       >
         <span className="text-xl">⋯</span>
-        
-        {/* Notification badge on menu button */}
-        {isLoggedIn && notificationCount > 0 && (
-          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-            {notificationCount > 9 ? '9+' : notificationCount}
-          </div>
-        )}
       </button>
 
       {/* Dropdown Menu */}
@@ -129,6 +143,7 @@ export default function TopMenu({ isLoggedIn = false, userName, notificationCoun
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

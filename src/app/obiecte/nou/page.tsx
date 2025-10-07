@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { addObject } from './actions';
 import { huggingFaceAI } from '@/lib/ai/huggingface';
+import { estimatePrice } from '@/lib/ai/pricing';
+import ImageUpload from '@/components/ImageUpload';
+import { useI18n } from '@/lib/i18n';
 
 interface AIAnalysis {
   category?: string;
@@ -20,54 +23,18 @@ export default function AddObjectPage() {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
-    description: ''
+    description: '',
+    condition: 'good',
+    location: '',
+    desired_items: '',
+    estimated_value: ''
   });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    setAiAnalysis({ isAnalyzing: true });
-
-    try {
-      const file = files[0];
-      const imageUrl = URL.createObjectURL(file);
-      setImages([imageUrl]);
-
-      if (useAiSuggestions) {
-        // Real AI classification with HuggingFace
-        const classification = await huggingFaceAI.classifyObjectFromImage(file);
-        const pricing = await huggingFaceAI.estimatePrice(
-          classification.category, 
-          classification.suggestedTitle || ''
-        );
-        
-        const analysis = {
-          category: classification.category,
-          suggestedTitle: classification.suggestedTitle,
-          description: classification.description,
-          estimatedPrice: pricing.estimatedPrice,
-          confidence: classification.confidence,
-          isAnalyzing: false
-        };
-        
-        setAiAnalysis(analysis);
-        setFormData(prev => ({
-          ...prev,
-          name: analysis.suggestedTitle || prev.name,
-          category: analysis.category || prev.category,
-          description: analysis.description || prev.description
-        }));
-      }
-    } catch (error) {
-      console.error('AI analysis failed:', error);
-      setAiAnalysis({ isAnalyzing: false });
-    }
-  };
+  const { t } = useI18n();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
@@ -106,46 +73,47 @@ export default function AddObjectPage() {
               </button>
             </div>
 
-            {/* Image Upload */}
+            {/* Image Upload with Cloudinary */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Imagini obiect * {useAiSuggestions && '(AI analizează prima imagine)'}
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="images"
-                />
-                <label htmlFor="images" className="cursor-pointer">
-                  {images.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-4">
-                      {images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="text-4xl mb-2">📷</div>
-                      <div className="text-gray-600">
-                        Încarcă imagini pentru analiză AI automată
-                      </div>
-                    </div>
-                  )}
-                </label>
-              </div>
+              <ImageUpload
+                maxImages={6}
+                onImagesChange={async (imageUrls) => {
+                  setImages(imageUrls);
+                  
+                  // Analyze first image with AI if enabled and we have images
+                  if (useAiSuggestions && imageUrls.length > 0 && !aiAnalysis.isAnalyzing) {
+                    setAiAnalysis({ isAnalyzing: true });
+                    
+                    try {
+                      // Use AI pricing estimation based on form data
+                      const pricing = await estimatePrice(
+                        formData.name || 'Obiect pentru schimb',
+                        formData.description || 'Obiect în stare bună pentru schimb',
+                        formData.category || 'other',
+                        formData.condition as any || 'good',
+                        formData.location || 'Romania'
+                      );
+                      
+                      setAiAnalysis({
+                        estimatedPrice: pricing.estimatedPrice,
+                        confidence: pricing.confidence,
+                        isAnalyzing: false
+                      });
+                    } catch (error) {
+                      console.error('AI analysis failed:', error);
+                      setAiAnalysis({ isAnalyzing: false });
+                    }
+                  }
+                }}
+                existingImages={images}
+              />
               {aiAnalysis.isAnalyzing && (
                 <div className="mt-2 flex items-center text-blue-600">
                   <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
-                  AI analizează imaginea...
+                  AI analizează imaginea și estimează prețul...
                 </div>
               )}
             </div>
@@ -215,9 +183,119 @@ export default function AddObjectPage() {
               />
             </div>
 
+            {/* Starea obiectului */}
+            <div>
+              <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-2">
+                Starea obiectului *
+              </label>
+              <select
+                id="condition"
+                name="condition"
+                value={formData.condition}
+                onChange={(e) => handleInputChange('condition', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="new">🆕 Nou</option>
+                <option value="like-new">✨ Ca nou</option>
+                <option value="good">👍 Bună</option>
+                <option value="fair">👌 Acceptabilă</option>
+                <option value="poor">🔧 Necesită reparații</option>
+              </select>
+            </div>
+
+            {/* Locația */}
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                Locația *
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={(e) => handleInputChange('location', e.target.value)}
+                placeholder="ex: București, Cluj-Napoca, Timișoara..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Ce doresc în schimb */}
+            <div>
+              <label htmlFor="desired_items" className="block text-sm font-medium text-gray-700 mb-2">
+                Ce doresc în schimb *
+              </label>
+              <textarea
+                id="desired_items"
+                name="desired_items"
+                rows={3}
+                value={formData.desired_items}
+                onChange={(e) => handleInputChange('desired_items', e.target.value)}
+                placeholder="ex: Telefon Android, Cărți de programare, Consolă PS5..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Valoare estimată (opțional) */}
+            <div>
+              <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-2">
+                Valoare estimată (RON)
+                {aiAnalysis.estimatedPrice && (
+                  <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                    🤖 AI: ~{aiAnalysis.estimatedPrice} RON
+                  </span>
+                )}
+              </label>
+              <input
+                type="number"
+                id="estimated_value"
+                name="estimated_value"
+                value={formData.estimated_value || ''}
+                onChange={(e) => handleInputChange('estimated_value', e.target.value)}
+                placeholder="ex: 500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Preferințe schimb */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Modalități de schimb preferate
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="exchange_local"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">🤝 Întâlnire locală</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="exchange_courier"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">📦 Prin curier</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="exchange_travel"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">🚗 Deplasare reciprocă</span>
+                </label>
+              </div>
+            </div>
+
             <button
               type="submit"
-              formAction={addObject}
+              formAction={async (formData) => {
+                // Adaug imaginile în FormData
+                formData.append('images', JSON.stringify(images));
+                await addObject(formData);
+              }}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
             >
               🚀 Publică Obiectul cu AI

@@ -49,12 +49,18 @@ export async function addObject(formData: FormData) {
 
     const user = userData.user;
 
-    // Procesez imaginile (pentru moment folosesc array gol, voi implementa upload-ul Cloudinary ulterior)
-    const images: string[] = [];
+    // Procesez imaginile din componenta ImageUpload (vine ca string JSON)
+    let images: string[] = [];
+    const imagesData = rawData.images as string;
     
-    // TODO: Implementare upload Cloudinary
-    // const uploadedImages = await uploadImagesToCloudinary(formData.getAll('images'));
-    // images.push(...uploadedImages);
+    if (imagesData) {
+      try {
+        images = JSON.parse(imagesData);
+      } catch (error) {
+        console.error('Error parsing images JSON:', error);
+        images = [];
+      }
+    }
 
     // Procesez valoarea estimată
     const estimatedValue = validationResult.data.estimated_value 
