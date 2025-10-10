@@ -7,8 +7,10 @@ import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
 import { GestureHints, RippleEffect } from '@/components/GestureComponents';
 import { useAuth } from '@/lib/auth/context';
 
-// Get Google Maps API key from environment
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+// Get Google Maps API key from environment (fallback to hardcoded for testing)
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyC8cBHpqMbqto5Puly0K1GTEam6edwd10k';
+
+console.log('🗺️ HomePage - Google Maps API Key:', GOOGLE_MAPS_API_KEY ? `${GOOGLE_MAPS_API_KEY.substring(0, 10)}... (${GOOGLE_MAPS_API_KEY.length} chars)` : 'MISSING');
 
 export default function HomePage() {
   const { user, loading } = useAuth();
