@@ -33,7 +33,8 @@
     "NEXT_PUBLIC_SUPABASE_URL": "https://xbqzebgrbcwrmcauzjpe.supabase.co",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhicXplYmdyYmN3cm1jYXV6anBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU3NDE1NzAsImV4cCI6MjA1MTMxNzU3MH0.DmHaBK6VCNqbEMXsXlH2VvuAhfqfMu_3GmZTfp9YR-4",
     "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "dcvfn2yc4",
-    "NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "swaply_uploads"
+    "NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "swaply_uploads",
+    "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyC8cBHpqMbqto5Puly0K1GTEam6edwd10k"
   },
   "rewrites": [
     {
