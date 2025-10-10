@@ -7,6 +7,9 @@ import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
 import { GestureHints, RippleEffect } from '@/components/GestureComponents';
 import { useAuth } from '@/lib/auth/context';
 
+// Get Google Maps API key from environment
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('toate');
@@ -195,6 +198,7 @@ export default function HomePage() {
             <RealGoogleMap 
               height="100%"
               locations={activeUsers}
+              apiKey={GOOGLE_MAPS_API_KEY}
               onLocationSelect={(location) => {
                 console.log('Selected location:', location);
               }}
