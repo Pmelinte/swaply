@@ -1,17 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import InteractiveMap from '@/components/InteractiveMap';
+import { useState, useEffect } from 'react';
+import RealGoogleMap from '@/components/RealGoogleMap';
 import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
 import { GestureHints, RippleEffect } from '@/components/GestureComponents';
 import { useAuth } from '@/lib/auth/context';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authStep, setAuthStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('toate');
+  const [showGestureHints, setShowGestureHints] = useState(false);
+
+  // Show gesture hints temporarily
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowGestureHints(true);
+      // Hide after 5 seconds
+      const hideTimer = setTimeout(() => {
+        setShowGestureHints(false);
+      }, 5000);
+      return () => clearTimeout(hideTimer);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Determine if user is logged in
   const isLoggedIn = !!user && !loading;
@@ -35,14 +47,12 @@ export default function HomePage() {
       setSelectedCategory(categoryIds[prevIndex]);
     },
     onSwipeUp: () => {
-      // Show auth modal if not logged in
-      if (!isLoggedIn) {
-        setShowAuthModal(true);
-      }
+      // Scroll to top when swiping up
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     onSwipeDown: () => {
-      // Close modals or navigate to browse
-      setShowAuthModal(false);
+      // Scroll down when swiping down
+      window.scrollBy({ top: 200, behavior: 'smooth' });
     },
     threshold: 50
   });
@@ -83,10 +93,10 @@ export default function HomePage() {
       <GestureHints 
         hints={[
           "👈 Swipe stânga/dreapta pentru a naviga prin categorii",
-          "👆 Swipe sus pentru autentificare rapidă",
-          "👇 Swipe jos pentru a închide modalurile"
+          "👆 Swipe sus pentru scroll",
+          "👇 Swipe jos pentru scroll"
         ]} 
-        visible={true} 
+        visible={showGestureHints} 
       />
       {/* Header Section */}
       <div className="relative bg-white shadow-sm">
@@ -136,12 +146,20 @@ export default function HomePage() {
                 Comunitate globală de schimburi inteligente. Redescoperă valoarea obiectelor tale și găsește exact ce îți trebuie prin schimb.
               </p>
               
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
-              >
-                🚀 Autentifică-te sau Creează cont
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link
+                  href="/login"
+                  className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  🔑 Autentifică-te
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  🚀 Creează cont gratuit
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -174,7 +192,13 @@ export default function HomePage() {
         {/* Map Section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="h-96">
-            <InteractiveMap />
+            <RealGoogleMap 
+              height="100%"
+              locations={activeUsers}
+              onLocationSelect={(location) => {
+                console.log('Selected location:', location);
+              }}
+            />
           </div>
           
           {/* Map info panel */}
@@ -228,110 +252,6 @@ export default function HomePage() {
           </div>
         )}
       </div>
-
-      {/* Authentication Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            {authStep === 1 ? (
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Alătură-te comunității Swaply! 🚀
-                </h3>
-                
-                <div className="space-y-4">
-                  <input
-                    type="email"
-                    placeholder="Adresa de email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  
-                  <div className="space-y-3">
-                    <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                      Continuă cu Email
-                    </button>
-                    
-                    <div className="text-center text-gray-500">sau</div>
-                    
-                    <button className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center space-x-2">
-                      <span>🔴</span>
-                      <span>Continuă cu Google</span>
-                    </button>
-                    
-                    <button className="w-full px-4 py-3 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium flex items-center justify-center space-x-2">
-                      <span>📘</span>
-                      <span>Continuă cu Facebook</span>
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="mt-6 flex space-x-3">
-                  <button
-                    onClick={() => setShowAuthModal(false)}
-                    className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Anulează
-                  </button>
-                  <button
-                    onClick={() => setAuthStep(2)}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Continuă
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Ultimul pas! �
-                </h3>
-                
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Nume utilizator"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  
-                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="">Selectează țara</option>
-                    <option value="ro">🇷🇴 România</option>
-                    <option value="md">🇲🇩 Moldova</option>
-                    <option value="bg">🇧🇬 Bulgaria</option>
-                    <option value="hu">🇭🇺 Ungaria</option>
-                  </select>
-                  
-                  <label className="flex items-start space-x-3">
-                    <input type="checkbox" className="mt-1" />
-                    <span className="text-sm text-gray-600">
-                      Accept <Link href="/termeni" className="text-blue-600 hover:text-blue-700">termenii și condițiile</Link> și <Link href="/confidentialitate" className="text-blue-600 hover:text-blue-700">politica de confidențialitate</Link>
-                    </span>
-                  </label>
-                </div>
-                
-                <div className="mt-6 flex space-x-3">
-                  <button
-                    onClick={() => setAuthStep(1)}
-                    className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Înapoi
-                  </button>
-                  <Link
-                    href="/signup"
-                    onClick={() => {
-                      setShowAuthModal(false);
-                      setAuthStep(1);
-                    }}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center"
-                  >
-                    Creează cont
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
