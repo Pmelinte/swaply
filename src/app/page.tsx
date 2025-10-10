@@ -104,6 +104,21 @@ export default function HomePage() {
       {/* Header Section */}
       <div className="relative bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* DEBUG: Test Google Maps - ALWAYS VISIBLE */}
+          <div className="mb-8 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+            <h2 className="text-lg font-bold mb-2">🗺️ Google Maps Test</h2>
+            <div className="h-96 bg-white rounded-lg overflow-hidden">
+              <RealGoogleMap 
+                height="100%"
+                locations={activeUsers}
+                apiKey={GOOGLE_MAPS_API_KEY}
+                onLocationSelect={(location) => {
+                  console.log('Selected location:', location);
+                }}
+              />
+            </div>
+          </div>
+
           {isLoggedIn ? (
             // Header pentru utilizatori logați
             <div>
