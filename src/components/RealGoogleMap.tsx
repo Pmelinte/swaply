@@ -257,6 +257,12 @@ export default function RealGoogleMap({
         <div className="text-center">
           <div className="text-6xl mb-4 animate-bounce">🗺️</div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Se încarcă Google Maps...</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            API Key: {apiKey ? `${apiKey.substring(0, 10)}... (${apiKey.length} chars)` : 'MISSING'}
+          </p>
+          <p className="text-sm text-gray-600 mb-4">
+            Valid: {hasValidApiKey ? '✅ YES' : '❌ NO'}
+          </p>
           <div className="flex justify-center space-x-1">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-100"></div>
