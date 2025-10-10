@@ -2,14 +2,50 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import InteractiveMap from '@/components/InteractiveMap';
+import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
+import { GestureHints, RippleEffect } from '@/components/GestureComponents';
+import { useAuth } from '@/lib/auth/context';
 
 export default function HomePage() {
-  // Simulăm statusul de autentificare (în viitor va veni din Supabase auth)
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authStep, setAuthStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('toate');
-  const userName = "Petru"; // Simulat - va veni din context utilizator
+
+  // Determine if user is logged in
+  const isLoggedIn = !!user && !loading;
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || "Utilizator";
+
+  // Initialize gesture hooks
+  const { ripples, onTouchStart, onTouchEnd } = useVisualFeedback();
+  const swipeHandlers = useSwipeGestures({
+    onSwipeLeft: () => {
+      // Navigate to next category
+      const categoryIds = categories.map(cat => cat.id);
+      const currentIndex = categoryIds.indexOf(selectedCategory);
+      const nextIndex = (currentIndex + 1) % categoryIds.length;
+      setSelectedCategory(categoryIds[nextIndex]);
+    },
+    onSwipeRight: () => {
+      // Navigate to previous category
+      const categoryIds = categories.map(cat => cat.id);
+      const currentIndex = categoryIds.indexOf(selectedCategory);
+      const prevIndex = currentIndex === 0 ? categoryIds.length - 1 : currentIndex - 1;
+      setSelectedCategory(categoryIds[prevIndex]);
+    },
+    onSwipeUp: () => {
+      // Show auth modal if not logged in
+      if (!isLoggedIn) {
+        setShowAuthModal(true);
+      }
+    },
+    onSwipeDown: () => {
+      // Close modals or navigate to browse
+      setShowAuthModal(false);
+    },
+    threshold: 50
+  });
 
   // Categories for map filtering
   const categories = [
@@ -30,7 +66,28 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative"
+      onTouchStart={(e) => {
+        onTouchStart(e);
+        swipeHandlers.onTouchStart(e);
+      }}
+      onTouchMove={swipeHandlers.onTouchMove}
+      onTouchEnd={(e) => {
+        onTouchEnd();
+        swipeHandlers.onTouchEnd(e);
+      }}
+    >
+      {/* Gesture feedback components */}
+      <RippleEffect ripples={ripples} />
+      <GestureHints 
+        hints={[
+          "👈 Swipe stânga/dreapta pentru a naviga prin categorii",
+          "👆 Swipe sus pentru autentificare rapidă",
+          "👇 Swipe jos pentru a închide modalurile"
+        ]} 
+        visible={true} 
+      />
       {/* Header Section */}
       <div className="relative bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -116,57 +173,60 @@ export default function HomePage() {
 
         {/* Map Section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="h-96 bg-gradient-to-br from-green-100 to-blue-100 relative">
-            {/* Simulare hartă */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🗺️</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  Hartă Interactivă Swaply
-                </h3>
-                <p className="text-gray-600 mb-4">
+          <div className="h-96">
+            <InteractiveMap />
+          </div>
+          
+          {/* Map info panel */}
+          <div className="p-4 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
                   {isLoggedIn 
-                    ? `Vedeți ${activeUsers.filter(u => selectedCategory === 'toate' || u.category === selectedCategory).length} obiecte în zona dumneavoastră`
-                    : `${activeUsers.filter(u => selectedCategory === 'toate' || u.category === selectedCategory).length} utilizatori activi în categoria "${categories.find(c => c.id === selectedCategory)?.name}"`
+                    ? `🗺️ Obiecte în zona ta` 
+                    : `👥 Utilizatori activi: ${categories.find(c => c.id === selectedCategory)?.name}`
                   }
+                </h3>
+                <p className="text-gray-600">
+                  {activeUsers.filter(u => selectedCategory === 'toate' || u.category === selectedCategory).length} rezultate găsite
                 </p>
-                
-                {/* Mock pins pe hartă */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
-                  {activeUsers
-                    .filter(user => selectedCategory === 'toate' || user.category === selectedCategory)
-                    .map((user) => (
-                      <div
-                        key={user.id}
-                        className="bg-white rounded-lg p-3 shadow-md border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer"
-                      >
-                        <div className="text-2xl mb-1">
-                          {categories.find(c => c.id === user.category)?.icon}
-                        </div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.name}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-
-                <div className="mt-6 text-sm text-gray-500">
-                  💡 Hartă interactivă cu Google Maps va fi integrată în curând
-                </div>
               </div>
+              <div className="text-2xl">
+                {categories.find(c => c.id === selectedCategory)?.icon}
+              </div>
+            </div>
+            
+            {/* Quick user list */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              {activeUsers
+                .filter(user => selectedCategory === 'toate' || user.category === selectedCategory)
+                .slice(0, 4)
+                .map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center space-x-3 p-3 bg-white rounded-lg border hover:border-blue-300 transition-colors cursor-pointer"
+                  >
+                    <div className="text-2xl">
+                      {categories.find(c => c.id === user.category)?.icon}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">{user.name}</div>
+                      <div className="text-sm text-gray-500">În apropiere</div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         </div>
 
-        {/* Demo Login Toggle pentru testare */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => setIsLoggedIn(!isLoggedIn)}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
-          >
-            🔄 Demo: {isLoggedIn ? 'Delogare' : 'Logare'} ({isLoggedIn ? 'Utilizator logat' : 'Vizitator'})
-          </button>
-        </div>
+        {/* Demo/Testing Info pentru dezvoltare */}
+        {!loading && (
+          <div className="mt-8 text-center">
+            <div className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm">
+              🔄 Status: {isLoggedIn ? `Logat ca ${userName}` : 'Vizitator'}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Authentication Modal */}
@@ -256,16 +316,16 @@ export default function HomePage() {
                   >
                     Înapoi
                   </button>
-                  <button
+                  <Link
+                    href="/signup"
                     onClick={() => {
                       setShowAuthModal(false);
-                      setIsLoggedIn(true);
                       setAuthStep(1);
                     }}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center"
                   >
                     Creează cont
-                  </button>
+                  </Link>
                 </div>
               </div>
             )}

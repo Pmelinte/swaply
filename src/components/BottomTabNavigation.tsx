@@ -3,31 +3,31 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth/context';
 
 interface TabBadge {
   count: number;
   type: 'notification' | 'message' | 'match';
 }
 
-interface BottomTabProps {
-  userId?: string;
-}
-
-export default function BottomTabNavigation({ userId }: BottomTabProps) {
+export default function BottomTabNavigation() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [badges, setBadges] = useState<Record<string, TabBadge>>({});
 
   // Simulate badge counts - in real app this would come from Supabase
   useEffect(() => {
-    if (userId) {
+    if (user) {
       // Mock data - replace with real API calls
       setBadges({
         chat: { count: 3, type: 'message' },
         match: { count: 2, type: 'match' },
         home: { count: 1, type: 'notification' }
       });
+    } else {
+      setBadges({});
     }
-  }, [userId]);
+  }, [user]);
 
   const tabs = [
     {

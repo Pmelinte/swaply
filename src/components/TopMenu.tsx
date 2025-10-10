@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import NotificationSystem from './NotificationSystem';
-import { getBrowserSupabase } from '@/lib/supabase/client';
-import { useEffect } from 'react';
+import { useAuth } from '@/lib/auth/context';
 
 interface MenuItem {
   id: string;
@@ -23,25 +22,19 @@ interface TopMenuProps {
 
 export default function TopMenu({ isLoggedIn = false, userName, notificationCount = 0 }: TopMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user, signOut } = useAuth();
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      const getUser = async () => {
-        const supabase = getBrowserSupabase();
-        const { data: { user } } = await supabase.auth.getUser();
-        setUserId(user?.id || null);
-      };
-      getUser();
-    }
-  }, [isLoggedIn]);
+  const handleLogout = async () => {
+    await signOut();
+    setIsOpen(false);
+  };
 
   const menuItems: MenuItem[] = isLoggedIn ? [
     { id: 'preferences', label: 'Preferințe AI', icon: '🤖', href: '/preferinte' },
     { id: 'language', label: 'Limba', icon: '🌍', href: '/limba' },
     { id: 'theme', label: 'Mod întunecat', icon: '🌙', action: 'toggle-theme' },
     { id: 'help', label: 'Ajutor', icon: '❓', href: '/ajutor' },
-    { id: 'logout', label: 'Deconectare', icon: '🚪', href: '/logout' },
+    { id: 'logout', label: 'Deconectare', icon: '🚪', action: 'logout' },
   ] : [
     { id: 'login', label: 'Conectează-te', icon: '🔑', href: '/login' },
     { id: 'signup', label: 'Înregistrează-te', icon: '👤', href: '/signup' },
@@ -51,8 +44,8 @@ export default function TopMenu({ isLoggedIn = false, userName, notificationCoun
   return (
     <div className="flex items-center space-x-2">
       {/* Notification System for logged in users */}
-      {isLoggedIn && userId && (
-        <NotificationSystem userId={userId} />
+      {isLoggedIn && user && (
+        <NotificationSystem userId={user.id} />
       )}
       
       {/* Main Menu */}
@@ -120,6 +113,8 @@ export default function TopMenu({ isLoggedIn = false, userName, notificationCoun
                         if (item.action === 'toggle-theme') {
                           // Theme toggle logic here
                           console.log('Toggle theme');
+                        } else if (item.action === 'logout') {
+                          handleLogout();
                         }
                         setIsOpen(false);
                       }}

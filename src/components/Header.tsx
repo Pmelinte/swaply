@@ -3,27 +3,22 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import TopMenu from './TopMenu';
+import { useAuth } from '@/lib/auth/context';
 import { useState, useEffect } from 'react';
-import { getBrowserSupabase } from '@/lib/supabase/client';
 
 export default function Header() {
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const { user, loading } = useAuth();
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    const getUser = async () => {
-      const supabase = getBrowserSupabase();
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      
-      if (user) {
-        // Mock notification count - replace with real Supabase query
-        setNotificationCount(5);
-      }
-    };
-    getUser();
-  }, []);
+    if (user) {
+      // Mock notification count - replace with real Supabase query
+      setNotificationCount(5);
+    } else {
+      setNotificationCount(0);
+    }
+  }, [user]);
 
   return (
     <header className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
@@ -55,8 +50,8 @@ export default function Header() {
 
         {/* Top Menu */}
         <TopMenu 
-          isLoggedIn={!!user}
-          userName={user?.user_metadata?.name || user?.email}
+          isLoggedIn={!!user && !loading}
+          userName={user?.user_metadata?.name || user?.email?.split('@')[0]}
           notificationCount={notificationCount}
         />
       </nav>
