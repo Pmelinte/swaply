@@ -74,14 +74,23 @@ export default function RealGoogleMap({
     }
     
     if (!hasValidApiKey) {
+      console.log('⚠️ Invalid API key, showing fallback UI');
       setIsLoading(false);
       return;
     }
 
-    if (!mapRef.current) return; // Wait for DOM
+    if (!mapRef.current) {
+      console.log('⏳ mapRef.current is null, waiting for DOM...');
+      // Schedule a retry
+      const timer = setTimeout(() => {
+        console.log('🔄 Retrying map initialization...');
+        setIsLoading(prev => prev); // Force re-render
+      }, 100);
+      return () => clearTimeout(timer);
+    }
 
     const mapElement = mapRef.current;
-    console.log('🗺️ Initializing Google Maps...');
+    console.log('🗺️ Initializing Google Maps... mapElement:', mapElement);
 
     const initMap = () => {
       try {
