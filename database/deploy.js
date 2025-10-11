@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * Script pentru deployment-ul bazei de date Supabase
+ * Automated Database Setup Script
  * 
- * Acest script execută în ordine fișierele SQL pentru a crea
- * întreaga structură a bazei de date.
+ * Verifica starea database-ului și oferă instrucțiuni pentru setup complet
  * 
  * Rulează cu: node database/deploy.js
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://ooebonjoqrpouzfjiiiz.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZWJvbmpvcXJwb3V6ZmppaWl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1Nzc3ODEsImV4cCI6MjA3MDE1Mzc4MX0.WKGYWq8DVmm0tJfJMJEYPbZ4Z4Y-RnCxyrI2BOtn80o';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Lista fișierelor SQL în ordinea de execuție
 const sqlFiles = [

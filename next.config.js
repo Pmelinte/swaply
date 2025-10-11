@@ -2,6 +2,7 @@
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  logging: { level: 'error' },
   async redirects() {
     return [{ source: "/loghin", destination: "/login", permanent: false }];
   },

@@ -88,6 +88,14 @@ export default function ProfilPage() {
               >
                 ➕ Adaugă obiect
               </Link>
+              <form action="/logout" method="POST" className="w-full">
+                <button 
+                  type="submit"
+                  className="w-full bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  🚪 Deconectează-te
+                </button>
+              </form>
             </div>
           </div>
         </div>

@@ -2,15 +2,9 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import RealGoogleMap from '@/components/RealGoogleMap';
 import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
 import { GestureHints, RippleEffect } from '@/components/GestureComponents';
 import { useAuth } from '@/lib/auth/context';
-
-// Get Google Maps API key from environment (fallback to hardcoded for testing)
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyC8cBHpqMbqto5Puly0K1GTEam6edwd10k';
-
-console.log('🗺️ HomePage - Google Maps API Key:', GOOGLE_MAPS_API_KEY ? `${GOOGLE_MAPS_API_KEY.substring(0, 10)}... (${GOOGLE_MAPS_API_KEY.length} chars)` : 'MISSING');
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -106,21 +100,6 @@ export default function HomePage() {
       {/* Header Section */}
       <div className="relative bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* DEBUG: Test Google Maps - ALWAYS VISIBLE */}
-          <div className="mb-8 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
-            <h2 className="text-lg font-bold mb-2">🗺️ Google Maps Test</h2>
-            <div className="h-96 bg-white rounded-lg overflow-hidden">
-              <RealGoogleMap 
-                height="100%"
-                locations={activeUsers}
-                apiKey={GOOGLE_MAPS_API_KEY}
-                onLocationSelect={(location) => {
-                  console.log('Selected location:', location);
-                }}
-              />
-            </div>
-          </div>
-
           {isLoggedIn ? (
             // Header pentru utilizatori logați
             <div>
@@ -211,15 +190,8 @@ export default function HomePage() {
 
         {/* Map Section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="h-96">
-            <RealGoogleMap 
-              height="100%"
-              locations={activeUsers}
-              apiKey={GOOGLE_MAPS_API_KEY}
-              onLocationSelect={(location) => {
-                console.log('Selected location:', location);
-              }}
-            />
+          <div className="h-96 bg-gray-100 flex items-center justify-center">
+            <p className="text-gray-500">🗺️ Harta se va încărca aici</p>
           </div>
           
           {/* Map info panel */}

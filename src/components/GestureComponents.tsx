@@ -9,7 +9,7 @@ export function GestureHints({ hints, visible = true }: { hints: string[]; visib
   if (!visible || hints.length === 0) return null;
   
   return (
-    <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-black bg-opacity-75 text-white px-4 py-2 rounded-full text-sm animate-bounce">
+    <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-black bg-opacity-75 text-white px-4 py-2 rounded-full text-sm transition-opacity duration-300">
       {hints[currentHint]}
     </div>
   );

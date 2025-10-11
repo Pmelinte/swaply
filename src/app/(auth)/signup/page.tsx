@@ -54,7 +54,17 @@ function SignupForm() {
           <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
             <div className="flex items-center">
               <span className="text-red-500 mr-2">⚠️</span>
-              <p className="text-red-700 text-sm">{error}</p>
+              <div className="text-red-700 text-sm">
+                <p>{error}</p>
+                {error.includes('deja înregistrat') && (
+                  <Link 
+                    href="/login" 
+                    className="inline-block mt-2 text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Conectează-te aici →
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}

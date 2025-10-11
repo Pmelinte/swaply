@@ -21,46 +21,132 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = getBrowserSupabase();
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    let mounted = true;
+
+    const initAuth = async () => {
+      console.log('🔄 Initializing auth...');
+      
+      // Get current session from Supabase
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      
+      // Check if user just logged in
+      const justLoggedIn = sessionStorage.getItem('swaply_just_logged_in');
+      
+      // Check if user just logged out
+      const justLoggedOut = sessionStorage.getItem('swaply_just_logged_out');
+      
+      if (justLoggedOut) {
+        // User JUST logged out - clear everything
+        console.log('🚪 Just logged out - clearing session');
+        sessionStorage.removeItem('swaply_just_logged_out');
+        await supabase.auth.signOut({ scope: 'local' });
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+        }
+      } else if (justLoggedIn || existingSession) {
+        // User just logged in OR has valid session - keep it
+        if (justLoggedIn) {
+          console.log('✅ Just logged in - keeping session');
+          sessionStorage.removeItem('swaply_just_logged_in');
+        } else {
+          console.log('🔐 Valid session found - staying logged in');
+        }
+        
+        if (mounted && existingSession) {
+          setSession(existingSession);
+          setUser(existingSession.user);
+        }
+      } else {
+        // No session, no flags - user is logged out
+        console.log('� No session - user logged out');
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+        }
+      }
+      
+      if (mounted) {
+        setLoading(false);
+      }
     };
 
-    getInitialSession();
+    initAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        console.log('Auth state change:', event);
 
-        if (event === 'SIGNED_IN') {
-          // Refresh the page to update server-side state
-          window.location.reload();
-        } else if (event === 'SIGNED_OUT') {
-          // Clear any cached data and refresh
-          window.location.reload();
+        if (mounted) {
+          if (event === 'SIGNED_IN') {
+            // User just logged in - set flag
+            sessionStorage.setItem('swaply_just_logged_in', 'true');
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+            console.log('User signed in');
+          } else if (event === 'SIGNED_OUT') {
+            // User signed out
+            sessionStorage.removeItem('swaply_just_logged_in');
+            setUser(null);
+            setSession(null);
+            setLoading(false);
+            console.log('User signed out');
+          } else if (event === 'TOKEN_REFRESHED' && session) {
+            // Only refresh if we're already logged in
+            setSession(session);
+            setUser(session.user);
+          }
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [supabase.auth]);
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      console.log('🚪 Starting logout process...');
+      
+      // Set logout flag FIRST before clearing anything
+      sessionStorage.setItem('swaply_just_logged_out', 'true');
+      
       // Clear local state
       setUser(null);
       setSession(null);
-      // Redirect to home
-      window.location.href = '/';
+      
+      // Clear storage
+      sessionStorage.removeItem('swaply_just_logged_in');
+      localStorage.clear();
+      
+      // Clear cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      console.log('💾 Storage cleared, calling logout endpoint...');
+      
+      // Call server logout (don't wait)
+      fetch('/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }).catch(err => console.log('Logout endpoint error (ignorable):', err));
+
+      // Force reload to trigger auth check
+      console.log('🔄 Reloading page...');
+      window.location.href = '/?t=' + Date.now();
+      
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ Logout error:', error);
+      
+      // Fallback
+      sessionStorage.setItem('swaply_just_logged_out', 'true');
+      localStorage.clear();
+      window.location.href = '/?t=' + Date.now();
     }
   };
 

@@ -53,26 +53,33 @@ export async function signUp(formData: FormData) {
       // Mesaje de eroare prietenoase
       let errorMessage = 'A apărut o eroare la înregistrare';
       
-      if (error.message.includes('already registered')) {
-        errorMessage = 'Acest email este deja înregistrat. Încearcă să te conectezi.';
+      if (error.message.includes('already registered') || error.code === 'user_already_exists') {
+        errorMessage = 'Acest email este deja înregistrat. Încearcă să te conectezi sau resetează parola.';
       } else if (error.message.includes('password')) {
         errorMessage = 'Parola nu îndeplinește cerințele. Încearcă o parolă mai puternică.';
       } else if (error.message.includes('email')) {
         errorMessage = 'Email-ul nu este valid. Verifică și încearcă din nou.';
+      } else if (error.message.includes('Invalid')) {
+        errorMessage = 'Datele introduse nu sunt valide. Verifică și încearcă din nou.';
       }
       
       return redirect(`/signup?error=${encodeURIComponent(errorMessage)}`);
     }
 
-    // Succes! Redirectez la pagina de confirmare
-    if (data.user && !data.user.email_confirmed_at) {
-      return redirect(`/login?success=${encodeURIComponent('Cont creat cu succes! Verifică-ți email-ul pentru activare.')}`);
+    // Succes! Redirect direct la aplicație
+    if (data.user) {
+      return redirect(`/?success=${encodeURIComponent('Bine ai venit pe Swaply! Contul tău a fost creat cu succes.')}`);
     }
 
-    // Dacă email-ul este confirmat automat, redirectez la dashboard
-    return redirect(`/?success=${encodeURIComponent('Bine ai venit pe Swaply! Contul tău a fost creat cu succes.')}`);
+    // Fallback în caz că nu avem user data
+    return redirect(`/login?success=${encodeURIComponent('Cont creat cu succes!')}`);
 
   } catch (error) {
+    // Nu prinde erorile de redirect (comportament normal Next.js)
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error;
+    }
+    
     console.error('Unexpected signup error:', error);
     return redirect(`/signup?error=${encodeURIComponent('A apărut o eroare neașteptată. Încearcă din nou.')}`);
   }

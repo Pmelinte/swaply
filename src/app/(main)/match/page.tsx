@@ -152,7 +152,7 @@ export default function MatchPage() {
           "👆 Swipe sus/jos pentru a ajusta scorul minim",
           "👆 Tap pe match pentru detalii"
         ]} 
-        visible={true} 
+        visible={false} 
       />
       
       <div className="max-w-6xl mx-auto">
@@ -164,6 +164,23 @@ export default function MatchPage() {
           <p className="text-gray-600">
             Obiecte compatibile găsite în baza algoritmului nostru inteligent
           </p>
+        </div>
+
+        {/* Swipe Instructions Banner */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-6 shadow-sm">
+          <div className="flex items-center justify-center text-center">
+            <div className="flex items-center gap-4 flex-wrap justify-center">
+              <span className="text-sm text-blue-700 font-medium">
+                👈 Swipe stânga/dreapta pentru a naviga prin categorii
+              </span>
+              <span className="text-sm text-purple-700 font-medium">
+                👆 Swipe sus/jos pentru a ajusta scorul minim
+              </span>
+              <span className="text-sm text-green-700 font-medium">
+                💫 Tap pe un obiect pentru detalii complete
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
