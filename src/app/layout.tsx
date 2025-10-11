@@ -3,8 +3,12 @@ import './globals.css';
 import { ClientLayout } from '@/components/ClientLayout';
 
 export const metadata: Metadata = {
-  title: 'Swaply',
-  description: 'Găsește partenerul potrivit pentru schimb de locuințe.',
+  title: 'Swaply - Schimbă, nu cumpăra',
+  description: 'Comunitate globală de schimburi inteligente. Redescoperă valoarea obiectelor tale și găsește exact ce îți trebuie prin schimb.',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

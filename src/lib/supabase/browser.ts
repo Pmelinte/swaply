@@ -1,8 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Obține clientul Supabase pentru browser
+// Singleton instance pentru a preveni multiple GoTrueClient instances
+let browserClient: SupabaseClient<Database> | null = null;
+
+// Obține clientul Supabase pentru browser (SINGLETON PATTERN)
 export function getBrowserSupabase() {
+  // Returnează instanța existentă dacă există deja
+  if (browserClient) {
+    return browserClient;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -12,14 +20,29 @@ export function getBrowserSupabase() {
     );
   }
 
-  return createClient<Database>(supabaseUrl, supabaseKey, {
+  // Crează instanța DOAR o singură dată
+  browserClient = createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
+      flowType: 'pkce',
+      storageKey: 'swaply-auth', // Consistent storage key
     },
+    global: {
+      headers: {
+        'X-Client-Info': 'swaply-web'
+      }
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
   });
+
+  return browserClient;
 }
 
 // Export cu tip pentru utilizare în aplicație
-export type SupabaseClient = ReturnType<typeof getBrowserSupabase>;
+export type BrowserSupabaseClient = ReturnType<typeof getBrowserSupabase>;
