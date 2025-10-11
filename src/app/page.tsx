@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
+import GoogleMapComponent from '@/components/GoogleMapComponent';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -125,9 +126,18 @@ export default function HomePage() {
 
         {/* Map Section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="h-96 bg-gray-100 flex items-center justify-center">
-            <p className="text-gray-500">🗺️ Harta se va încărca aici</p>
-          </div>
+          {/* Google Maps Component - Official Implementation */}
+          <GoogleMapComponent
+            center={{ lat: 45.9432, lng: 24.9668 }} // Sibiu, Romania
+            zoom={7}
+            markers={activeUsers
+              .filter(user => selectedCategory === 'toate' || user.category === selectedCategory)
+              .map(user => ({
+                position: { lat: user.lat, lng: user.lng },
+                title: user.name
+              }))}
+            className="h-96 w-full"
+          />
           
           {/* Map info panel */}
           <div className="p-4 bg-gray-50">
