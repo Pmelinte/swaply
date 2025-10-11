@@ -5,8 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/supabase/client';
 import { useI18n } from '@/lib/i18n';
+import SimpleGoogleMap from '@/components/SimpleGoogleMap';
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyC8cBHpqMbqto5Puly0K1GTEam6edwd10k';
 
 export default function LoginPage() {
+  console.log('🗺️ API Key:', GOOGLE_MAPS_API_KEY ? `${GOOGLE_MAPS_API_KEY.substring(0, 10)}...` : 'MISSING');
   const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -77,7 +81,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+      {/* 🗺️ TEST: Google Maps */}
+      <div className="mb-8 max-w-4xl mx-auto">
+        <div className="bg-yellow-100 border-4 border-yellow-500 rounded-lg p-4">
+          <h2 className="text-xl font-bold mb-4">🗺️ Google Maps Test (Simple & Clean)</h2>
+          <SimpleGoogleMap 
+            apiKey={GOOGLE_MAPS_API_KEY}
+            center={{ lat: 45.9432, lng: 24.9668 }}
+            zoom={7}
+            height="500px"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           {/* Header */}
@@ -207,6 +225,7 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
