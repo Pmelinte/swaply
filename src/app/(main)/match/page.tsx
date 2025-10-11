@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
-import { GestureHints, RippleEffect } from '@/components/GestureComponents';
 
 interface MatchObject {
   id: string;
@@ -97,34 +95,6 @@ export default function MatchPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [minScore, setMinScore] = useState<number>(50);
 
-  // Initialize gesture hooks
-  const { ripples, onTouchStart, onTouchEnd } = useVisualFeedback();
-  const swipeHandlers = useSwipeGestures({
-    onSwipeLeft: () => {
-      // Navigate to next category
-      const categories = ['all', 'Electronice', 'Gaming', 'Carti', 'Casa', 'Sport', 'Generale'];
-      const currentIndex = categories.indexOf(selectedCategory);
-      const nextIndex = (currentIndex + 1) % categories.length;
-      setSelectedCategory(categories[nextIndex]);
-    },
-    onSwipeRight: () => {
-      // Navigate to previous category
-      const categories = ['all', 'Electronice', 'Gaming', 'Carti', 'Casa', 'Sport', 'Generale'];
-      const currentIndex = categories.indexOf(selectedCategory);
-      const prevIndex = currentIndex === 0 ? categories.length - 1 : currentIndex - 1;
-      setSelectedCategory(categories[prevIndex]);
-    },
-    onSwipeUp: () => {
-      // Increase min score
-      setMinScore(prev => Math.min(100, prev + 10));
-    },
-    onSwipeDown: () => {
-      // Decrease min score
-      setMinScore(prev => Math.max(30, prev - 10));
-    },
-    threshold: 50
-  });
-
   const filteredMatches = MOCK_MATCHES.filter(match => {
     const categoryMatch = selectedCategory === 'all' || match.category === selectedCategory;
     const scoreMatch = match.score >= minScore;
@@ -132,29 +102,7 @@ export default function MatchPage() {
   });
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4 relative"
-      onTouchStart={(e) => {
-        onTouchStart(e);
-        swipeHandlers.onTouchStart(e);
-      }}
-      onTouchMove={swipeHandlers.onTouchMove}
-      onTouchEnd={(e) => {
-        onTouchEnd();
-        swipeHandlers.onTouchEnd(e);
-      }}
-    >
-      {/* Gesture feedback components */}
-      <RippleEffect ripples={ripples} />
-      <GestureHints 
-        hints={[
-          "👈 Swipe stânga/dreapta pentru a schimba categoria",
-          "👆 Swipe sus/jos pentru a ajusta scorul minim",
-          "👆 Tap pe match pentru detalii"
-        ]} 
-        visible={false} 
-      />
-      
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -164,23 +112,6 @@ export default function MatchPage() {
           <p className="text-gray-600">
             Obiecte compatibile găsite în baza algoritmului nostru inteligent
           </p>
-        </div>
-
-        {/* Swipe Instructions Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-6 shadow-sm">
-          <div className="flex items-center justify-center text-center">
-            <div className="flex items-center gap-4 flex-wrap justify-center">
-              <span className="text-sm text-blue-700 font-medium">
-                👈 Swipe stânga/dreapta pentru a naviga prin categorii
-              </span>
-              <span className="text-sm text-purple-700 font-medium">
-                👆 Swipe sus/jos pentru a ajusta scorul minim
-              </span>
-              <span className="text-sm text-green-700 font-medium">
-                💫 Tap pe un obiect pentru detalii complete
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Filters */}

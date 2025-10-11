@@ -1,60 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useSwipeGestures, useVisualFeedback } from '@/hooks/useGestures';
-import { GestureHints, RippleEffect } from '@/components/GestureComponents';
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('toate');
-  const [showGestureHints, setShowGestureHints] = useState(false);
-
-  // Show gesture hints temporarily
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowGestureHints(true);
-      // Hide after 5 seconds
-      const hideTimer = setTimeout(() => {
-        setShowGestureHints(false);
-      }, 5000);
-      return () => clearTimeout(hideTimer);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Determine if user is logged in
   const isLoggedIn = !!user && !loading;
   const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || "Utilizator";
-
-  // Initialize gesture hooks
-  const { ripples, onTouchStart, onTouchEnd } = useVisualFeedback();
-  const swipeHandlers = useSwipeGestures({
-    onSwipeLeft: () => {
-      // Navigate to next category
-      const categoryIds = categories.map(cat => cat.id);
-      const currentIndex = categoryIds.indexOf(selectedCategory);
-      const nextIndex = (currentIndex + 1) % categoryIds.length;
-      setSelectedCategory(categoryIds[nextIndex]);
-    },
-    onSwipeRight: () => {
-      // Navigate to previous category
-      const categoryIds = categories.map(cat => cat.id);
-      const currentIndex = categoryIds.indexOf(selectedCategory);
-      const prevIndex = currentIndex === 0 ? categoryIds.length - 1 : currentIndex - 1;
-      setSelectedCategory(categoryIds[prevIndex]);
-    },
-    onSwipeUp: () => {
-      // Scroll to top when swiping up
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    onSwipeDown: () => {
-      // Scroll down when swiping down
-      window.scrollBy({ top: 200, behavior: 'smooth' });
-    },
-    threshold: 50
-  });
 
   // Categories for map filtering
   const categories = [
@@ -75,28 +31,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative"
-      onTouchStart={(e) => {
-        onTouchStart(e);
-        swipeHandlers.onTouchStart(e);
-      }}
-      onTouchMove={swipeHandlers.onTouchMove}
-      onTouchEnd={(e) => {
-        onTouchEnd();
-        swipeHandlers.onTouchEnd(e);
-      }}
-    >
-      {/* Gesture feedback components */}
-      <RippleEffect ripples={ripples} />
-      <GestureHints 
-        hints={[
-          "👈 Swipe stânga/dreapta pentru a naviga prin categorii",
-          "👆 Swipe sus pentru scroll",
-          "👇 Swipe jos pentru scroll"
-        ]} 
-        visible={showGestureHints} 
-      />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       {/* Header Section */}
       <div className="relative bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-8">
