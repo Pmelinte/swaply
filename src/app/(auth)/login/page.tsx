@@ -5,8 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/supabase/client';
 import { useI18n } from '@/lib/i18n';
+import RealGoogleMap from '@/components/RealGoogleMap';
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyC8cBHpqMbqto5Puly0K1GTEam6edwd10k';
 
 export default function LoginPage() {
+  console.log('🗺️ LoginPage - Google Maps API Key:', GOOGLE_MAPS_API_KEY ? `${GOOGLE_MAPS_API_KEY.substring(0, 10)}... (${GOOGLE_MAPS_API_KEY.length} chars)` : 'MISSING');
   const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -37,6 +41,9 @@ export default function LoginPage() {
           setError(error.message);
         }
       } else {
+        // Setează flag-ul pentru AuthContext să știe că user tocmai s-a logat
+        sessionStorage.setItem('swaply_just_logged_in', 'true');
+        
         // Redirect to home page after successful login
         router.push('/');
         router.refresh();
@@ -74,7 +81,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+      {/* DEBUG: Google Maps Test Section */}
+      <div className="mb-8 p-4 bg-yellow-100 border-4 border-yellow-500 rounded-lg">
+        <h2 className="text-xl font-bold mb-2">🗺️ DEBUG: Google Maps Test</h2>
+        <p className="mb-4">API Key: {GOOGLE_MAPS_API_KEY ? `${GOOGLE_MAPS_API_KEY.substring(0, 10)}... (${GOOGLE_MAPS_API_KEY.length} chars)` : 'MISSING'}</p>
+        <div className="h-[400px] w-full">
+          <RealGoogleMap
+            apiKey={GOOGLE_MAPS_API_KEY}
+            center={{ lat: 45.9432, lng: 24.9668 }}
+            zoom={7}
+            locations={[
+              { name: 'București', lat: 44.4268, lng: 26.1025, count: 127, description: '127 obiecte' },
+              { name: 'Cluj-Napoca', lat: 46.7712, lng: 23.6236, count: 89, description: '89 obiecte' },
+              { name: 'Timișoara', lat: 45.7489, lng: 21.2087, count: 64, description: '64 obiecte' },
+              { name: 'Iași', lat: 47.1585, lng: 27.6014, count: 52, description: '52 obiecte' },
+            ]}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           {/* Header */}
@@ -140,6 +167,31 @@ export default function LoginPage() {
                 'Autentificare'
               )}
             </button>
+
+            {/* Forgot Password Link */}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  const email = formData.email;
+                  if (!email) {
+                    setError('Introdu email-ul mai întâi pentru a reseta parola');
+                    return;
+                  }
+                  setLoading(true);
+                  // Call reset password action
+                  const form = new FormData();
+                  form.append('email', email);
+                  import('./reset-actions').then(({ resetPassword }) => {
+                    resetPassword(form).finally(() => setLoading(false));
+                  });
+                }}
+                disabled={loading}
+                className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
+              >
+                Ai uitat parola?
+              </button>
+            </div>
           </form>
 
           {/* Divider */}
@@ -179,6 +231,7 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
