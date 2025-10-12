@@ -53,6 +53,14 @@ export default function GoogleMapWithUsers({
     libraries: ['geometry', 'places'],
   });
 
+  // Debug logging
+  console.log('🗺️ Google Maps Debug:', {
+    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'SET ✅' : 'MISSING ❌',
+    isLoaded,
+    loadError: loadError?.message || 'None',
+    markersCount: markers.length
+  });
+
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
     console.log('✅ METODA #3: React Google Maps loaded');

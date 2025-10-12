@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/supabase/client';
 import { useI18n } from '@/lib/i18n';
@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n';
 export default function LoginPage() {
   const { t } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -17,6 +18,14 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
+
+  // Check for errors from callback
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setError(`❌ ${decodeURIComponent(errorParam)}`);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,15 +41,20 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOtp({
           email: formData.email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/`,
+            shouldCreateUser: false, // Don't create user automatically
           },
         });
 
         if (error) {
-          setError(error.message);
+          if (error.message.includes('User not found')) {
+            setError('❌ Nu există cont cu acest email. Te rugăm să te înregistrezi mai întâi.');
+          } else {
+            setError(`❌ ${error.message}`);
+          }
         } else {
           // Show success message for magic link
-          setSuccess('✅ Link-ul magic a fost trimis pe email! Verifică-ți inbox-ul (și folderul Spam).');
+          setSuccess('✅ Link-ul magic a fost trimis pe email! Verifică-ți inbox-ul (și folderul Spam). Link-ul este valabil 60 de minute.');
         }
       } else {
         // Password authentication
