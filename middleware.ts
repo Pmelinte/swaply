@@ -59,9 +59,10 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  // Skip session check for auth callback to prevent interference
-  if (req.nextUrl.pathname === '/auth/callback') {
-    console.log('🔄 Middleware: Skipping session check for auth callback');
+  // Skip session check for auth routes to prevent interference
+  const authRoutes = ['/auth/callback', '/login', '/signup'];
+  if (authRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+    console.log('🔄 Middleware: Skipping session check for auth route:', req.nextUrl.pathname);
     return response;
   }
 

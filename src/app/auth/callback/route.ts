@@ -6,9 +6,13 @@ import type { Database } from "@/lib/supabase/types";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const token_hash = url.searchParams.get("token_hash");
+  const type = url.searchParams.get("type");
   const next = url.searchParams.get("next") ?? "/";
   const error = url.searchParams.get("error");
   const error_description = url.searchParams.get("error_description");
+
+  console.log('🔍 Auth callback params:', { code: !!code, token_hash: !!token_hash, type });
 
   // Handle error from Supabase
   if (error) {
@@ -18,7 +22,8 @@ export async function GET(request: Request) {
     );
   }
 
-  if (code) {
+  // Handle both PKCE code flow AND magic link token flow
+  if (code || token_hash) {
     try {
       const cookieStore = await cookies();
       
@@ -50,7 +55,12 @@ export async function GET(request: Request) {
         }
       );
 
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      const { data, error: exchangeError } = code 
+        ? await supabase.auth.exchangeCodeForSession(code)
+        : await supabase.auth.verifyOtp({ 
+            token_hash: token_hash!, 
+            type: type as any 
+          });
       
       if (exchangeError) {
         console.error('🔴 Exchange code error:', exchangeError);
@@ -71,7 +81,21 @@ export async function GET(request: Request) {
       // Create response with redirect
       const response = NextResponse.redirect(`${url.origin}${next}`);
       
-      // Set session cookie explicitly
+      // Set all session cookies explicitly
+      if (data.session) {
+        // Set the session in cookies
+        response.cookies.set({
+          name: 'sb-' + process.env.NEXT_PUBLIC_SUPABASE_URL!.split('//')[1].split('.')[0] + '-auth-token',
+          value: JSON.stringify(data.session),
+          httpOnly: false,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          path: '/',
+        });
+      }
+      
+      // Set flag for just logged in
       response.cookies.set('swaply_just_logged_in', 'true', {
         maxAge: 10,
         path: '/',
@@ -87,7 +111,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // No code provided, redirect to login
-  console.log('🔴 No code in callback URL');
-  return NextResponse.redirect(`${url.origin}/login?error=no_code_provided`);
+  // No code or token provided, redirect to login
+  console.log('🔴 No code or token in callback URL');
+  return NextResponse.redirect(`${url.origin}/login?error=no_auth_data_provided`);
 }
