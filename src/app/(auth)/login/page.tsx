@@ -11,38 +11,60 @@ export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
+  const [authMethod, setAuthMethod] = useState<'password' | 'magic'>('password');
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       const supabase = getBrowserSupabase();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+      
+      if (authMethod === 'magic') {
+        // Magic Link authentication
+        const { error } = await supabase.auth.signInWithOtp({
+          email: formData.email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
 
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setError('Email sau parolă incorecte');
-        } else if (error.message.includes('Email not confirmed')) {
-          setError('Te rugăm să îți confirmi emailul înainte să te autentifici');
-        } else {
+        if (error) {
           setError(error.message);
+        } else {
+          // Show success message for magic link
+          setSuccess('✅ Link-ul magic a fost trimis pe email! Verifică-ți inbox-ul (și folderul Spam).');
         }
       } else {
-        // Setează flag-ul pentru AuthContext să știe că user tocmai s-a logat
-        sessionStorage.setItem('swaply_just_logged_in', 'true');
-        
-        // Redirect to home page after successful login
-        router.push('/');
-        router.refresh();
+        // Password authentication
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            setError('Email sau parolă incorecte');
+          } else if (error.message.includes('Email not confirmed')) {
+            setError('Te rugăm să îți confirmi emailul înainte să te autentifici');
+          } else {
+            setError(error.message);
+          }
+        } else {
+          // Setează flag-ul pentru AuthContext să știe că user tocmai s-a logat
+          sessionStorage.setItem('swaply_just_logged_in', 'true');
+          
+          // Redirect to home page after successful login
+          router.push('/');
+          router.refresh();
+        }
       }
     } catch (err) {
       setError('A apărut o eroare neașteptată');
@@ -97,6 +119,41 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-sm">{success}</p>
+            </div>
+          )}
+
+          {/* Auth Method Toggle */}
+          <div className="mb-6">
+            <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setAuthMethod('password')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  authMethod === 'password'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                🔐 Parolă
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMethod('magic')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  authMethod === 'magic'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                ✨ Link Magic
+              </button>
+            </div>
+          </div>
+
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -114,20 +171,30 @@ export default function LoginPage() {
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Parola
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
+            {authMethod === 'password' && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Parola
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  required={authMethod === 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+
+            {authMethod === 'magic' && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  📧 Vei primi un link magic pe email pentru autentificare instant, fără parolă!
+                </p>
+              </div>
+            )}
 
             <button
               type="submit"
@@ -137,37 +204,39 @@ export default function LoginPage() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Se autentifică...
+                  {authMethod === 'magic' ? 'Se trimite...' : 'Se autentifică...'}
                 </div>
               ) : (
-                'Autentificare'
+                authMethod === 'magic' ? '✨ Trimite Link Magic' : '🔐 Autentificare'
               )}
             </button>
 
-            {/* Forgot Password Link */}
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  const email = formData.email;
-                  if (!email) {
-                    setError('Introdu email-ul mai întâi pentru a reseta parola');
-                    return;
-                  }
-                  setLoading(true);
-                  // Call reset password action
-                  const form = new FormData();
-                  form.append('email', email);
-                  import('./reset-actions').then(({ resetPassword }) => {
-                    resetPassword(form).finally(() => setLoading(false));
-                  });
-                }}
-                disabled={loading}
-                className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
-              >
-                Ai uitat parola?
-              </button>
-            </div>
+            {/* Forgot Password Link - only show for password auth */}
+            {authMethod === 'password' && (
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const email = formData.email;
+                    if (!email) {
+                      setError('Introdu email-ul mai întâi pentru a reseta parola');
+                      return;
+                    }
+                    setLoading(true);
+                    // Call reset password action
+                    const form = new FormData();
+                    form.append('email', email);
+                    import('./reset-actions').then(({ resetPassword }) => {
+                      resetPassword(form).finally(() => setLoading(false));
+                    });
+                  }}
+                  disabled={loading}
+                  className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                >
+                  Ai uitat parola?
+                </button>
+              </div>
+            )}
           </form>
 
           {/* Divider */}
