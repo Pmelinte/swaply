@@ -265,4 +265,4 @@ Acest proiect este licențiat sub licența MIT — vezi fișierul LICENSE pentru
 Pentru întrebări sau sugestii, vizitează pagina [Contact](https://swaply.ro/info/contact) sau deschide un issue pe GitHub.
 
 ---
-Dezvoltat cu ❤️ pentru comunitatea de călători și exploratori
+Dezvoltat cu ❤️ pentru comunitatea de călători și exploratori# Force redeploy - 2025-10-12 18:38:50
