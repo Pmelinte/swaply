@@ -240,7 +240,7 @@ function LoginForm() {
                 <input
                   id="email"
                   type="email"
-                  required={authMethod !== 'phone'}
+                  required={authMethod === 'password' || authMethod === 'magic'}
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
