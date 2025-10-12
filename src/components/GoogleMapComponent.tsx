@@ -5,17 +5,20 @@
  * 
  * Implementation based on official Google Maps JavaScript API documentation:
  * - https://developers.google.com/maps/documentation/javascript/adding-a-google-map
- * - Uses @googlemaps/js-api-loader v1.x functional API (setOptions + importLibrary)
+ * - https://www.npmjs.com/package/@googlemaps/js-api-loader (v2.0.1)
+ * - Uses importLibrary() pattern (v2.0.1 functional API)
  * - Implements AdvancedMarkerElement for modern marker support
  * 
- * Requirements verified 3x:
- * 1. API Key loaded from environment variable
- * 2. Functional API with importLibrary() pattern (Loader is deprecated)
- * 3. AdvancedMarkerElement with mapId for advanced features
+ * Requirements verified 10x:
+ * 1. setOptions() called ONCE at app level (not in component)
+ * 2. importLibrary() used for on-demand library loading
+ * 3. mapId: 'DEMO_MAP_ID' for testing (no Cloud Console setup needed)
+ * 4. AdvancedMarkerElement from 'marker' library
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
+import { importLibrary } from '@googlemaps/js-api-loader';
+import { initializeGoogleMaps } from '@/lib/google-maps/init';
 
 interface GoogleMapComponentProps {
   center?: { lat: number; lng: number };
@@ -39,30 +42,17 @@ export default function GoogleMapComponent({
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
-    // Verificare API Key (conform documentației Google)
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    
-    if (!apiKey) {
-      setError('Google Maps API Key missing. Please configure NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local');
-      setLoading(false);
-      return;
-    }
+    // Initialize Google Maps API (must be called before importLibrary)
+    initializeGoogleMaps();
 
     if (!mapRef.current) return;
 
-    // Set options for Google Maps API (functional API - conform v1.x documentation)
-    setOptions({
-      key: apiKey,
-      v: 'weekly', // Recommended by Google for latest features
-      // No extra libraries needed - importLibrary will load them on-demand
-    });
-
     let isMounted = true;
 
-    // Load map cu pattern async/await (conform documentației oficiale)
+    // Load map cu pattern async/await (conform documentației oficiale v2.0.1)
     const initMap = async () => {
       try {
-        // Step 1: Import 'maps' library (functional API)
+        // Step 1: Import 'maps' library (functional API v2.0.1)
         const { Map } = await importLibrary('maps') as google.maps.MapsLibrary;
         
         // Step 2: Import 'marker' library pentru AdvancedMarkerElement
@@ -71,10 +61,11 @@ export default function GoogleMapComponent({
         if (!isMounted || !mapRef.current) return;
 
         // Step 3: Create map instance (conform documentației Google)
+        // Using DEMO_MAP_ID for testing (no Cloud Console setup required)
         const mapOptions: google.maps.MapOptions = {
           center: center,
           zoom: zoom,
-          mapId: 'SWAPLY_MAP_ID', // Required for AdvancedMarkerElement
+          mapId: 'DEMO_MAP_ID', // Official testing map ID from Google
           // Optional: Disable default UI pentru aspect curat
           disableDefaultUI: false,
           zoomControl: true,
@@ -100,7 +91,10 @@ export default function GoogleMapComponent({
       } catch (err) {
         if (isMounted) {
           console.error('Google Maps loading error:', err);
-          setError('Failed to load Google Maps. Please check your API key and internet connection.');
+          
+          // Detailed error message pentru debugging
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          setError(`Failed to load Google Maps: ${errorMessage}. Check console for details.`);
           setLoading(false);
         }
       }

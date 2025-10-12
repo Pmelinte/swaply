@@ -14,6 +14,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ro" suppressHydrationWarning>
+      <head>
+        {/* METODA #1: Direct Script Tag - Classical Google Maps Loading */}
+        <script
+          async
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=marker&callback=initMap`}
+        />
+      </head>
       <body className="min-h-screen bg-slate-50 antialiased font-sans" suppressHydrationWarning>
         <ClientLayout>{children}</ClientLayout>
       </body>

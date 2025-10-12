@@ -1,11 +1,18 @@
 'use client';
 
+import { useEffect } from 'react';
 import { I18nProvider } from '@/lib/i18n';
 import { AuthProvider } from '@/lib/auth/context';
+import { initializeGoogleMaps } from '@/lib/google-maps/init';
 import Header from './Header';
 import BottomTabNavigation from './BottomTabNavigation';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
+  // Initialize Google Maps API once at app level
+  useEffect(() => {
+    initializeGoogleMaps();
+  }, []);
+
   return (
     <I18nProvider>
       <AuthProvider>

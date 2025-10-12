@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
-import GoogleMapComponent from '@/components/GoogleMapComponent';
+import GoogleMapWithUsers from '@/components/GoogleMapWithUsers';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -126,15 +126,18 @@ export default function HomePage() {
 
         {/* Map Section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Google Maps Component - Official Implementation */}
-          <GoogleMapComponent
+          {/* Google Maps - METODA #3: Interactive Map with User Markers */}
+          <GoogleMapWithUsers
             center={{ lat: 45.9432, lng: 24.9668 }} // Sibiu, Romania
             zoom={7}
             markers={activeUsers
-              .filter(user => selectedCategory === 'toate' || user.category === selectedCategory)
-              .map(user => ({
-                position: { lat: user.lat, lng: user.lng },
-                title: user.name
+              .filter(u => selectedCategory === 'toate' || u.category === selectedCategory)
+              .map(u => ({
+                id: u.id,
+                lat: u.lat,
+                lng: u.lng,
+                category: u.category,
+                name: u.name
               }))}
             className="h-96 w-full"
           />
