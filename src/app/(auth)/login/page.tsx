@@ -37,11 +37,11 @@ function LoginForm() {
       const supabase = getBrowserSupabase();
       
       if (authMethod === 'magic') {
-        // Magic Link authentication
+        // Magic Link authentication with explicit PKCE flow
         const { error } = await supabase.auth.signInWithOtp({
           email: formData.email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=/`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             shouldCreateUser: false, // Don't create user automatically
           },
         });

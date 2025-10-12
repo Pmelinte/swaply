@@ -13,10 +13,18 @@ export async function getServerSupabase() {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Ignore errors in middleware
+          }
         },
         remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", maxAge: 0, ...options });
+          try {
+            cookieStore.set({ name, value: "", maxAge: 0, ...options });
+          } catch (error) {
+            // Ignore errors in middleware
+          }
         },
       },
     }

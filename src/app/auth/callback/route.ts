@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import type { Database } from "@/lib/supabase/types";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -18,8 +20,37 @@ export async function GET(request: Request) {
 
   if (code) {
     try {
-      const supabase = await getServerSupabase();
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      const cookieStore = await cookies();
+      
+      // Create Supabase client with proper cookie handling for PKCE
+      const supabase = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+            set(name: string, value: string, options: any) {
+              try {
+                cookieStore.set({ name, value, ...options });
+              } catch (error) {
+                // Cookie is read-only in server components during render
+                console.log('Cookie set deferred:', name);
+              }
+            },
+            remove(name: string, options: any) {
+              try {
+                cookieStore.set({ name, value: "", maxAge: 0, ...options });
+              } catch (error) {
+                console.log('Cookie remove deferred:', name);
+              }
+            },
+          },
+        }
+      );
+
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       
       if (exchangeError) {
         console.error('🔴 Exchange code error:', exchangeError);
@@ -28,13 +59,23 @@ export async function GET(request: Request) {
         );
       }
 
-      console.log('✅ Auth callback successful, redirecting to:', next);
+      if (!data.session) {
+        console.error('🔴 No session created');
+        return NextResponse.redirect(
+          `${url.origin}/login?error=no_session_created`
+        );
+      }
+
+      console.log('✅ Auth callback successful, user:', data.user?.email);
       
-      // Set flag for successful login
+      // Create response with redirect
       const response = NextResponse.redirect(`${url.origin}${next}`);
+      
+      // Set session cookie explicitly
       response.cookies.set('swaply_just_logged_in', 'true', {
-        maxAge: 10, // 10 seconds
+        maxAge: 10,
         path: '/',
+        httpOnly: false,
       });
       
       return response;
@@ -47,5 +88,6 @@ export async function GET(request: Request) {
   }
 
   // No code provided, redirect to login
-  return NextResponse.redirect(`${url.origin}/login`);
+  console.log('🔴 No code in callback URL');
+  return NextResponse.redirect(`${url.origin}/login?error=no_code_provided`);
 }

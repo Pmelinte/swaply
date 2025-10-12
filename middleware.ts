@@ -1,25 +1,79 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  let response = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  });
 
-  // Refresh session for all requests to ensure fresh auth state
-  const { data: { session }, error } = await supabase.auth.getSession();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // Set cookie in request for current request
+          req.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+          // Set cookie in response for future requests
+          response = NextResponse.next({
+            request: {
+              headers: req.headers,
+            },
+          });
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: CookieOptions) {
+          // Remove cookie in request
+          req.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+          // Remove cookie in response
+          response = NextResponse.next({
+            request: {
+              headers: req.headers,
+            },
+          });
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+        },
+      },
+    }
+  );
 
-  // Log session refresh for debugging
-  if (req.nextUrl.pathname.startsWith('/auth/callback')) {
-    console.log('🔄 Middleware: Processing auth callback');
+  // Skip session check for auth callback to prevent interference
+  if (req.nextUrl.pathname === '/auth/callback') {
+    console.log('🔄 Middleware: Skipping session check for auth callback');
+    return response;
   }
+
+  // Refresh session for all other requests
+  const { data: { session }, error } = await supabase.auth.getSession();
 
   if (error) {
     console.error('🔴 Middleware auth error:', error);
   }
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/profil', '/obiecte/nou', '/cereri', '/chat', '/match'];
+  const protectedRoutes = ['/profil', '/obiecte/nou', '/cereri', '/chat', '/match', '/schimb'];
   const isProtectedRoute = protectedRoutes.some(route => 
     req.nextUrl.pathname.startsWith(route)
   );
@@ -31,7 +85,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  return res;
+  return response;
 }
 
 // Run on all routes to ensure session is always fresh
