@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import type { Database } from "@/lib/supabase/types";
 
+/**
+ * Auth Callback Handler - Supports PKCE (OAuth) and Token (Magic Link) flows
+ * Handles: Google OAuth, Magic Link, Phone OTP
+ */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -25,31 +28,37 @@ export async function GET(request: Request) {
   // Handle both PKCE code flow AND magic link token flow
   if (code || token_hash) {
     try {
-      const cookieStore = await cookies();
+      // Create response first
+      const response = NextResponse.redirect(`${url.origin}${next}`);
       
-      // Create Supabase client with proper cookie handling for PKCE
+      // Create Supabase client with cookie handling that uses NextResponse
       const supabase = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
           cookies: {
             get(name: string) {
-              return cookieStore.get(name)?.value;
+              return request.headers.get('cookie')?.split('; ')
+                .find(c => c.startsWith(`${name}=`))
+                ?.split('=')[1];
             },
             set(name: string, value: string, options: any) {
-              try {
-                cookieStore.set({ name, value, ...options });
-              } catch (error) {
-                // Cookie is read-only in server components during render
-                console.log('Cookie set deferred:', name);
-              }
+              response.cookies.set({
+                name,
+                value,
+                ...options,
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+              });
             },
             remove(name: string, options: any) {
-              try {
-                cookieStore.set({ name, value: "", maxAge: 0, ...options });
-              } catch (error) {
-                console.log('Cookie remove deferred:', name);
-              }
+              response.cookies.set({
+                name,
+                value: '',
+                maxAge: 0,
+                ...options,
+              });
             },
           },
         }
@@ -78,30 +87,7 @@ export async function GET(request: Request) {
 
       console.log('✅ Auth callback successful, user:', data.user?.email);
       
-      // Create response with redirect
-      const response = NextResponse.redirect(`${url.origin}${next}`);
-      
-      // Set all session cookies explicitly
-      if (data.session) {
-        // Set the session in cookies
-        response.cookies.set({
-          name: 'sb-' + process.env.NEXT_PUBLIC_SUPABASE_URL!.split('//')[1].split('.')[0] + '-auth-token',
-          value: JSON.stringify(data.session),
-          httpOnly: false,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          path: '/',
-        });
-      }
-      
-      // Set flag for just logged in
-      response.cookies.set('swaply_just_logged_in', 'true', {
-        maxAge: 10,
-        path: '/',
-        httpOnly: false,
-      });
-      
+      // Response already created with cookies set by Supabase client
       return response;
     } catch (err) {
       console.error('🔴 Unexpected auth error:', err);
