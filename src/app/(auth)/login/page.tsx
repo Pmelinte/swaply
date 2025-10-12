@@ -13,11 +13,14 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [authMethod, setAuthMethod] = useState<'password' | 'magic'>('password');
+  const [authMethod, setAuthMethod] = useState<'password' | 'magic' | 'phone'>('password');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    phone: '',
+    otp: '',
   });
+  const [otpSent, setOtpSent] = useState(false);
 
   // Check for errors from callback
   useEffect(() => {
@@ -55,6 +58,39 @@ function LoginForm() {
         } else {
           // Show success message for magic link
           setSuccess('✅ Link-ul magic a fost trimis pe email! Verifică-ți inbox-ul (și folderul Spam). Link-ul este valabil 60 de minute.');
+        }
+      } else if (authMethod === 'phone') {
+        // Phone authentication
+        if (!otpSent) {
+          // Send OTP
+          const { error } = await supabase.auth.signInWithOtp({
+            phone: formData.phone,
+            options: {
+              shouldCreateUser: false,
+            },
+          });
+
+          if (error) {
+            setError(`❌ ${error.message}`);
+          } else {
+            setOtpSent(true);
+            setSuccess('✅ Codul de verificare a fost trimis pe telefon! Introdu codul primit.');
+          }
+        } else {
+          // Verify OTP
+          const { error } = await supabase.auth.verifyOtp({
+            phone: formData.phone,
+            token: formData.otp,
+            type: 'sms',
+          });
+
+          if (error) {
+            setError(`❌ ${error.message}`);
+          } else {
+            sessionStorage.setItem('swaply_just_logged_in', 'true');
+            router.push('/');
+            router.refresh();
+          }
         }
       } else {
         // Password authentication
@@ -142,11 +178,16 @@ function LoginForm() {
 
           {/* Auth Method Toggle */}
           <div className="mb-6">
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+            <div className="grid grid-cols-3 gap-2 p-1 bg-gray-100 rounded-lg">
               <button
                 type="button"
-                onClick={() => setAuthMethod('password')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                onClick={() => {
+                  setAuthMethod('password');
+                  setOtpSent(false);
+                  setError('');
+                  setSuccess('');
+                }}
+                className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                   authMethod === 'password'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
@@ -156,34 +197,119 @@ function LoginForm() {
               </button>
               <button
                 type="button"
-                onClick={() => setAuthMethod('magic')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                onClick={() => {
+                  setAuthMethod('magic');
+                  setOtpSent(false);
+                  setError('');
+                  setSuccess('');
+                }}
+                className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                   authMethod === 'magic'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                ✨ Link Magic
+                ✨ Link
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMethod('phone');
+                  setOtpSent(false);
+                  setError('');
+                  setSuccess('');
+                }}
+                className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  authMethod === 'phone'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                📱 Telefon
               </button>
             </div>
           </div>
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="exemplu@email.com"
-              />
-            </div>
+            {authMethod !== 'phone' && (
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required={authMethod !== 'phone'}
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="exemplu@email.com"
+                />
+              </div>
+            )}
+
+            {authMethod === 'phone' && (
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Număr de telefon
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="+40 712 345 678"
+                  disabled={otpSent}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Format: +40 (România), +1 (SUA), etc.
+                </p>
+              </div>
+            )}
+
+            {authMethod === 'phone' && otpSent && (
+              <div>
+                <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                  Cod de verificare
+                </label>
+                <input
+                  id="otp"
+                  type="text"
+                  required
+                  value={formData.otp}
+                  onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest"
+                  placeholder="123456"
+                  maxLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setLoading(true);
+                    setError('');
+                    try {
+                      const supabase = getBrowserSupabase();
+                      const { error: resendError } = await supabase.auth.signInWithOtp({
+                        phone: formData.phone,
+                        options: { shouldCreateUser: false }
+                      });
+                      if (resendError) throw resendError;
+                      setSuccess('Cod retrimis cu succes!');
+                    } catch (err: unknown) {
+                      setError(err instanceof Error ? err.message : 'Eroare la retrimitere cod');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-700 underline"
+                >
+                  Retrimite codul
+                </button>
+              </div>
+            )}
 
             {authMethod === 'password' && (
               <div>
@@ -218,10 +344,16 @@ function LoginForm() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  {authMethod === 'magic' ? 'Se trimite...' : 'Se autentifică...'}
+                  {authMethod === 'magic' ? 'Se trimite...' : authMethod === 'phone' && !otpSent ? 'Se trimite cod...' : 'Se autentifică...'}
                 </div>
               ) : (
-                authMethod === 'magic' ? '✨ Trimite Link Magic' : '🔐 Autentificare'
+                authMethod === 'magic' 
+                  ? '✨ Trimite Link Magic' 
+                  : authMethod === 'phone' && !otpSent 
+                    ? '📱 Trimite Cod SMS' 
+                    : authMethod === 'phone' && otpSent 
+                      ? '✅ Verifică Cod' 
+                      : '🔐 Autentificare'
               )}
             </button>
 
