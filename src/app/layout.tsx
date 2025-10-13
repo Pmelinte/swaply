@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ClientLayout } from '@/components/ClientLayout';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
 export const metadata: Metadata = {
   title: 'Swaply - Schimbă, nu cumpăra',
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-slate-50 antialiased font-sans" suppressHydrationWarning>
+        <GoogleAnalytics />
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
