@@ -1,2 +1,8 @@
 import { redirect } from 'next/navigation';
-export default function Page() { redirect('/info/intrebari-frecvente'); }
+
+// Force dynamic rendering for redirects
+export const dynamic = 'force-dynamic';
+
+export default function Page() { 
+  redirect('/info/intrebari-frecvente'); 
+}

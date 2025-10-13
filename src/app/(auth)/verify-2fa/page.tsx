@@ -7,7 +7,7 @@ import { useI18n } from '@/lib/i18n';
 import { verifyTOTP, verifyBackupCode } from '@/lib/auth/2fa-login';
 
 /**
- * 2FA Verification Page
+ * 2FA Verification Page - Content Component
  * 
  * Shown after successful email/password login if user has 2FA enabled
  * 
@@ -23,7 +23,7 @@ import { verifyTOTP, verifyBackupCode } from '@/lib/auth/2fa-login';
  * - Each backup code can be used only once
  */
 
-function Verify2FAForm() {
+function Verify2FAContent() {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -307,7 +307,7 @@ export default function Verify2FAPage() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     }>
-      <Verify2FAForm />
+      <Verify2FAContent />
     </Suspense>
   );
 }
