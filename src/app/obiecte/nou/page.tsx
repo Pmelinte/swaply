@@ -5,6 +5,7 @@ import { addObject } from './actions';
 import { huggingFaceAI } from '@/lib/ai/huggingface';
 import { estimatePrice } from '@/lib/ai/pricing';
 import MultiImageUpload from '@/components/MultiImageUpload';
+import SEOPreview from '@/components/SEOPreview';
 import { useI18n } from '@/lib/i18n';
 
 interface AIAnalysis {
@@ -255,6 +256,15 @@ export default function AddObjectPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+
+            {/* SEO Preview */}
+            <SEOPreview
+              title={formData.name}
+              description={formData.description}
+              category={formData.category}
+              value={formData.estimated_value ? parseFloat(formData.estimated_value) : undefined}
+              condition={formData.condition}
+            />
 
             {/* Preferințe schimb */}
             <div>
