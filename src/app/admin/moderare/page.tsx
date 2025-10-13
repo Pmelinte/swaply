@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getServerSupabase } from '@/lib/supabase/server';
-import { getModerationQueue, reviewModerationItem } from '@/lib/fraud';
+import { getModerationQueue, approveObject, rejectObject } from '@/lib/fraud';
 
 export default async function ModerationQueuePage() {
   const supabase = await getServerSupabase();

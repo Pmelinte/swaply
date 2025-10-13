@@ -438,6 +438,45 @@ export async function processErasureRequest(requestId: string): Promise<void> {
 }
 
 // ============================================================================
+// BACKWARD COMPATIBILITY WRAPPERS
+// ============================================================================
+
+/**
+ * @deprecated Use requestDataErasure instead
+ * Wrapper for backward compatibility with old page components
+ */
+export async function requestDataDeletion(userId: string, confirmationCode?: string): Promise<GDPRRequest> {
+  // Old signature had userId param, new one doesn't (uses auth context)
+  return requestDataErasure(confirmationCode ? `Confirmed: ${confirmationCode}` : undefined);
+}
+
+/**
+ * @deprecated Use getMyConsents instead
+ * Wrapper for backward compatibility with old page components
+ */
+export async function getConsentLog(userId?: string): Promise<ConsentRecord[]> {
+  // Old signature had userId param, new one doesn't (uses auth context)
+  return getMyConsents();
+}
+
+/**
+ * @deprecated Use giveConsent/withdrawConsent instead
+ * Wrapper for backward compatibility with old page components
+ */
+export async function updateConsent(
+  userId: string, 
+  consentType: ConsentType, 
+  granted: boolean
+): Promise<void> {
+  // Old signature had userId and granted params, new API split into give/withdraw
+  if (granted) {
+    await giveConsent(consentType);
+  } else {
+    await withdrawConsent(consentType);
+  }
+}
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
