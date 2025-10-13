@@ -14,7 +14,11 @@
     "prepare": "husky",
     "check": "npm run typecheck && npm run lint",
     "check:vercel": "vercel pull --yes --environment=production && vercel build",
-    "test": "echo no tests && exit 0"
+    "test": "echo no tests && exit 0",
+    "test:auth:diagnostics": "node scripts/test-10-diagnostics.js",
+    "auth:fix": "node scripts/apply-auth-fixes.js",
+    "test:auth:verify": "node scripts/verify-5-paths.js",
+    "deploy:autonomous": "pwsh -File deploy-autonomous.ps1"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.1",
@@ -22,6 +26,7 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.58.0",
+    "dotenv": "^17.2.3",
     "next": "^15.4.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
