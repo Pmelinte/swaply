@@ -2,6 +2,19 @@
   "common": {
     "home": "Home",
     "signup": "Sign Up",
-    "login": "Login"
+    "login": "Login",
+    "objects": "Objects",
+    "subcategories": "subcategories",
+    "back": "Back"
+  },
+  "category": {
+    "searchPlaceholder": "Search categories...",
+    "aiSuggestions": "AI suggestions based on description",
+    "searchResults": "Search results",
+    "noResults": "No categories found",
+    "tryDifferentKeywords": "Try different keywords",
+    "mainCategories": "Main categories",
+    "selectCategory": "Select category",
+    "categorySelected": "Category selected"
   }
 }
