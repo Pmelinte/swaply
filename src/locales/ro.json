@@ -2,6 +2,99 @@
   "common": {
     "home": "Acasă",
     "signup": "Înregistrare",
-    "login": "Autentificare"
+    "login": "Autentificare",
+    "objects": "Obiecte",
+    "subcategories": "subcategorii",
+    "back": "Înapoi",
+    "next": "Următorul",
+    "saving": "Se salvează...",
+    "of": "din"
+  },
+  "category": {
+    "searchPlaceholder": "Caută categorii...",
+    "aiSuggestions": "Sugestii AI bazate pe descriere",
+    "searchResults": "Rezultate căutare",
+    "noResults": "Nu am găsit categorii",
+    "tryDifferentKeywords": "Încearcă alte cuvinte cheie",
+    "mainCategories": "Categorii principale",
+    "selectCategory": "Selectează categoria",
+    "categorySelected": "Categorie selectată"
+  },
+  "categories": {
+    "electronics": "Electronică",
+    "home": "Casă & Grădină",
+    "fashion": "Modă",
+    "sports": "Sport",
+    "vehicles": "Vehicule",
+    "books": "Cărți & Media",
+    "toys": "Jucării & Copii",
+    "tools": "Unelte",
+    "services": "Servicii",
+    "housing": "Locuințe"
+  },
+  "onboarding": {
+    "welcome": "Bine ai venit pe Swaply!",
+    "subtitle": "Ajută-ne să înțelegem ce cauți pentru recomandări mai bune",
+    "step": "Pasul",
+    "skip": "Sari peste",
+    "finish": "Finalizează",
+    "error": "Eroare la salvare. Te rugăm să încerci din nou.",
+    "q1": {
+      "title": "Ce te aduce pe Swaply?"
+    },
+    "q2": {
+      "title": "Ce categorii te interesează?",
+      "subtitle": "Selectează toate categoriile care te interesează"
+    },
+    "q3": {
+      "title": "Care este gama ta obișnuită de valoare?"
+    },
+    "q4": {
+      "title": "Cât de departe ai merge pentru un schimb?"
+    },
+    "q5": {
+      "title": "Cât de des plănuiești să faci schimburi?"
+    },
+    "purpose": {
+      "declutter": {
+        "title": "Curățenie & Organizare",
+        "desc": "Vreau să scap de lucruri nefolosite"
+      },
+      "find": {
+        "title": "Găsește Lucruri Noi",
+        "desc": "Caut obiecte specifice de care am nevoie"
+      },
+      "save": {
+        "title": "Economisește Bani",
+        "desc": "Prefer să schimb decât să cumpăr"
+      },
+      "eco": {
+        "title": "Eco-Friendly",
+        "desc": "Vreau să reduc amprenta de carbon"
+      },
+      "community": {
+        "title": "Comunitate Locală",
+        "desc": "Îmi place să cunosc oameni noi"
+      }
+    },
+    "value": {
+      "low": "0-50 RON - Obiecte simple",
+      "medium": "50-200 RON - Valoare medie",
+      "high": "200-500 RON - Valoare ridicată",
+      "premium": "500+ RON - Premium/Colecții"
+    },
+    "distance": {
+      "very_local": "Până la 10 km - Foarte local",
+      "local": "Până la 25 km - Local",
+      "nearby": "Până la 50 km - Apropiat",
+      "regional": "Până la 100 km - Regional",
+      "national": "Până la 500 km - Național"
+    },
+    "frequency": {
+      "daily": "Zilnic - Swapper activ",
+      "weekly": "Săptămânal - Utilizator regulat",
+      "monthly": "Lunar - Ocazional",
+      "occasionally": "Din când în când - Casual"
+    }
   }
 }

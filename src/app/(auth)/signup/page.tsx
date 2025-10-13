@@ -5,6 +5,9 @@ import { signUp } from './actions';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering for useSearchParams()
+export const dynamic = 'force-dynamic';
+
 function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

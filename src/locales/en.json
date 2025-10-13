@@ -2,6 +2,58 @@
   "common": {
     "home": "Home",
     "signup": "Sign Up",
-    "login": "Login"
+    "login": "Login",
+    "objects": "Objects",
+    "subcategories": "subcategories",
+    "back": "Back",
+    "next": "Next",
+    "saving": "Saving...",
+    "of": "of"
+  },
+  "category": {
+    "searchPlaceholder": "Search categories...",
+    "aiSuggestions": "AI suggestions based on description",
+    "searchResults": "Search results",
+    "noResults": "No categories found",
+    "tryDifferentKeywords": "Try different keywords",
+    "mainCategories": "Main categories",
+    "selectCategory": "Select category",
+    "categorySelected": "Category selected"
+  },
+  "categories": {
+    "electronics": "Electronics",
+    "home": "Home & Garden",
+    "fashion": "Fashion",
+    "sports": "Sports",
+    "vehicles": "Vehicles",
+    "books": "Books & Media",
+    "toys": "Toys & Kids",
+    "tools": "Tools",
+    "services": "Services",
+    "housing": "Housing"
+  },
+  "onboarding": {
+    "welcome": "Welcome to Swaply!",
+    "subtitle": "Help us understand what you're looking for better recommendations",
+    "step": "Step",
+    "skip": "Skip",
+    "finish": "Finish",
+    "error": "Error saving. Please try again.",
+    "q1": {
+      "title": "What brings you to Swaply?"
+    },
+    "q2": {
+      "title": "What categories interest you?",
+      "subtitle": "Select all categories that interest you"
+    },
+    "q3": {
+      "title": "What is your usual value range?"
+    },
+    "q4": {
+      "title": "How far are you willing to travel?"
+    },
+    "q5": {
+      "title": "What languages do you speak?"
+    }
   }
 }

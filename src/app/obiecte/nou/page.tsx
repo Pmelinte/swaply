@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { addObject } from './actions';
 import { huggingFaceAI } from '@/lib/ai/huggingface';
 import { estimatePrice } from '@/lib/ai/pricing';
-import ImageUpload from '@/components/ImageUpload';
+import MultiImageUpload from '@/components/MultiImageUpload';
+import SEOPreview from '@/components/SEOPreview';
 import { useI18n } from '@/lib/i18n';
+
+// Force dynamic rendering to prevent prerender errors
+export const dynamic = 'force-dynamic';
 
 interface AIAnalysis {
   category?: string;
@@ -73,12 +77,12 @@ export default function AddObjectPage() {
               </button>
             </div>
 
-            {/* Image Upload with Cloudinary */}
+            {/* Image Upload with Cloudinary - DRAG & DROP */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Imagini obiect * {useAiSuggestions && '(AI analizează prima imagine)'}
+                📸 Imagini obiect * {useAiSuggestions && '(AI analizează prima imagine)'}
               </label>
-              <ImageUpload
+              <MultiImageUpload
                 maxImages={6}
                 onImagesChange={async (imageUrls) => {
                   setImages(imageUrls);
@@ -111,9 +115,9 @@ export default function AddObjectPage() {
                 existingImages={images}
               />
               {aiAnalysis.isAnalyzing && (
-                <div className="mt-2 flex items-center text-blue-600">
-                  <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
-                  AI analizează imaginea și estimează prețul...
+                <div className="mt-3 flex items-center text-blue-600 bg-blue-50 rounded-lg p-3">
+                  <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mr-3"></div>
+                  <span className="font-medium">🤖 AI analizează imaginea și estimează prețul...</span>
                 </div>
               )}
             </div>
@@ -255,6 +259,15 @@ export default function AddObjectPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+
+            {/* SEO Preview */}
+            <SEOPreview
+              title={formData.name}
+              description={formData.description}
+              category={formData.category}
+              value={formData.estimated_value ? parseFloat(formData.estimated_value) : undefined}
+              condition={formData.condition}
+            />
 
             {/* Preferințe schimb */}
             <div>
