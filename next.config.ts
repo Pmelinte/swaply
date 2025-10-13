@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   optimizeFonts: true,
   swcMinify: true,
   outputFileTracingRoot: __dirname,
+  // Skip static optimization in CI/demo environments
+  output: process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('example') ? 'standalone' : undefined,
   async redirects() {
     return [
       { 
