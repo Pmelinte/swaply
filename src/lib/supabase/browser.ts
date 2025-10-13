@@ -1,5 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+// Use stub types until migrations 014-019 are applied
+// TODO: After migrations, regenerate: npx supabase gen types typescript --linked
+import type { Database } from './database.types.stub';
 
 // Singleton instance pentru a preveni multiple GoTrueClient instances
 let browserClient: SupabaseClient<Database> | null = null;

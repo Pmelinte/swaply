@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import type { Database } from './types';
+// Use stub types until migrations 014-019 are applied
+// TODO: After migrations, regenerate: npx supabase gen types typescript --linked
+import type { Database } from './database.types.stub';
 
 export async function getServerSupabase() {
   const cookieStore = await cookies();
