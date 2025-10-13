@@ -6,6 +6,8 @@ import { AuthProvider } from '@/lib/auth/context';
 import { initializeGoogleMaps } from '@/lib/google-maps/init';
 import Header from './Header';
 import BottomTabNavigation from './BottomTabNavigation';
+import PWAInstallPrompt from './PWAInstallPrompt';
+import PWAUpdateNotification from './PWAUpdateNotification';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   // Initialize Google Maps API once at app level
@@ -25,6 +27,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         
         {/* Bottom Tab Navigation */}
         <BottomTabNavigation />
+        
+        {/* PWA Features */}
+        <PWAInstallPrompt />
+        <PWAUpdateNotification />
       </AuthProvider>
     </I18nProvider>
   );
