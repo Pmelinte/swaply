@@ -15,6 +15,7 @@ const translations: Record<Locale, Translations> = {
 
 interface I18nContextValue {
   locale: Locale;
+  language: Locale; // Alias for backwards compatibility
   setLocale: (locale: Locale) => void;
   t: Translations;
 }
@@ -36,6 +37,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const value: I18nContextValue = {
     locale,
+    language: locale, // Alias for backwards compatibility
     setLocale,
     t: translations[locale],
   };
