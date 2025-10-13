@@ -16,6 +16,7 @@ interface SearchObject {
   images: string[];
   created_at: string;
   user_id: string;
+  distance_km?: number; // Optional, only present when distance search is active
 }
 
 const CATEGORIES = [
@@ -66,6 +67,11 @@ export default function SearchPage() {
     searchParams.get('sort') || 'recent'
   );
 
+  // Location state
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+
   // Results state
   const [results, setResults] = useState<SearchObject[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,6 +81,42 @@ export default function SearchPage() {
 
   const supabase = getBrowserSupabase();
 
+  // Get user location on mount
+  useEffect(() => {
+    if ('geolocation' in navigator && maxDistance !== 999999) {
+      getUserLocation();
+    }
+  }, []);
+
+  const getUserLocation = () => {
+    setLocationLoading(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setLocationError(
+          locale === 'ro'
+            ? 'Nu am putut obține locația. Asigură-te că ai permis accesul la locație.'
+            : 'Could not get location. Make sure you allowed location access.'
+        );
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000, // Cache for 5 minutes
+      }
+    );
+  };
+
   useEffect(() => {
     performSearch();
   }, [debouncedQuery, selectedCategories, selectedConditions, maxDistance, sortBy, page]);
@@ -82,53 +124,109 @@ export default function SearchPage() {
   const performSearch = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('objects')
-        .select('*', { count: 'exact' })
-        .eq('status', 'available');
+      // Use distance-based search if location is available and distance filter is active
+      if (maxDistance !== 999999 && userLocation) {
+        const { data, error } = await supabase.rpc('search_objects_by_distance', {
+          user_lat: userLocation.lat,
+          user_lon: userLocation.lon,
+          radius_km: maxDistance,
+          search_query: debouncedQuery || null,
+          object_category: selectedCategories.length === 1 ? selectedCategories[0] : null,
+          max_results: 1000, // Get all results for client-side pagination and filtering
+        });
 
-      // Text search
-      if (debouncedQuery) {
-        query = query.or(`title.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`);
+        if (error) throw error;
+
+        let filteredResults = data || [];
+
+        // Apply additional filters client-side
+        if (selectedCategories.length > 1) {
+          filteredResults = filteredResults.filter((obj: SearchObject & { distance_km: number }) =>
+            selectedCategories.includes(obj.category)
+          );
+        }
+
+        if (selectedConditions.length > 0) {
+          filteredResults = filteredResults.filter((obj: SearchObject & { distance_km: number; condition: string }) =>
+            selectedConditions.includes(obj.condition)
+          );
+        }
+
+        // Apply sorting
+        switch (sortBy) {
+          case 'distance':
+            // Already sorted by distance from function
+            break;
+          case 'recent':
+            filteredResults.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            break;
+          case 'oldest':
+            filteredResults.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            break;
+          case 'title_asc':
+            filteredResults.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+          case 'title_desc':
+            filteredResults.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+        }
+
+        setTotalResults(filteredResults.length);
+
+        // Apply pagination client-side
+        const from = (page - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE;
+        setResults(filteredResults.slice(from, to));
+      } else {
+        // Standard search without distance
+        let query = supabase
+          .from('objects')
+          .select('*', { count: 'exact' })
+          .eq('status', 'available');
+
+        // Text search
+        if (debouncedQuery) {
+          query = query.or(`title.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`);
+        }
+
+        // Category filter
+        if (selectedCategories.length > 0) {
+          query = query.in('category', selectedCategories);
+        }
+
+        // Condition filter
+        if (selectedConditions.length > 0) {
+          query = query.in('condition', selectedConditions);
+        }
+
+        // Sorting
+        switch (sortBy) {
+          case 'recent':
+            query = query.order('created_at', { ascending: false });
+            break;
+          case 'oldest':
+            query = query.order('created_at', { ascending: true });
+            break;
+          case 'title_asc':
+            query = query.order('title', { ascending: true });
+            break;
+          case 'title_desc':
+            query = query.order('title', { ascending: false });
+            break;
+        }
+
+        // Pagination
+        const from = (page - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE - 1;
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) throw error;
+
+        setResults(data || []);
+        setTotalResults(count || 0);
       }
-
-      // Category filter
-      if (selectedCategories.length > 0) {
-        query = query.in('category', selectedCategories);
-      }
-
-      // Condition filter
-      if (selectedConditions.length > 0) {
-        query = query.in('condition', selectedConditions);
-      }
-
-      // Sorting
-      switch (sortBy) {
-        case 'recent':
-          query = query.order('created_at', { ascending: false });
-          break;
-        case 'oldest':
-          query = query.order('created_at', { ascending: true });
-          break;
-        case 'title_asc':
-          query = query.order('title', { ascending: true });
-          break;
-        case 'title_desc':
-          query = query.order('title', { ascending: false });
-          break;
-      }
-
-      // Pagination
-      const from = (page - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-      query = query.range(from, to);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
-      setResults(data || []);
-      setTotalResults(count || 0);
 
       // Update URL
       updateURL();
@@ -270,6 +368,57 @@ export default function SearchPage() {
                 </div>
               </div>
 
+              {/* Distance Filter */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                  {locale === 'ro' ? 'Distanță maximă' : 'Maximum Distance'}
+                </h3>
+                {locationError && (
+                  <div className="text-xs text-amber-600 mb-2 p-2 bg-amber-50 rounded">
+                    ⚠️ {locationError}
+                  </div>
+                )}
+                {locationLoading && (
+                  <div className="text-xs text-blue-600 mb-2 p-2 bg-blue-50 rounded">
+                    📍 {locale === 'ro' ? 'Obțin locația...' : 'Getting location...'}
+                  </div>
+                )}
+                {userLocation && maxDistance !== 999999 && (
+                  <div className="text-xs text-green-600 mb-2 p-2 bg-green-50 rounded">
+                    ✓ {locale === 'ro' ? 'Locație activă' : 'Location active'}
+                  </div>
+                )}
+                <select
+                  value={maxDistance}
+                  onChange={(e) => {
+                    const newDistance = parseInt(e.target.value);
+                    setMaxDistance(newDistance);
+                    setPage(1);
+                    // Request location if distance filter is enabled
+                    if (newDistance !== 999999 && !userLocation && !locationLoading) {
+                      getUserLocation();
+                    }
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                >
+                  {DISTANCE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {typeof option.label === 'string'
+                        ? option.label
+                        : option.label[locale]}
+                    </option>
+                  ))}
+                </select>
+                {maxDistance !== 999999 && !userLocation && !locationLoading && (
+                  <button
+                    onClick={getUserLocation}
+                    className="mt-2 w-full text-xs text-blue-600 hover:text-blue-800 py-1 border border-blue-300 rounded"
+                  >
+                    📍 {locale === 'ro' ? 'Activează locația' : 'Enable location'}
+                  </button>
+                )}
+              </div>
+
               {/* Sort */}
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3">
@@ -280,6 +429,11 @@ export default function SearchPage() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 >
+                  {maxDistance !== 999999 && userLocation && (
+                    <option value="distance">
+                      {locale === 'ro' ? 'Distanță (aproape)' : 'Distance (nearest)'}
+                    </option>
+                  )}
                   <option value="recent">
                     {locale === 'ro' ? 'Cele mai recente' : 'Most Recent'}
                   </option>
@@ -350,11 +504,17 @@ export default function SearchPage() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>📍 {object.location}</span>
-                          <span>
-                            {new Date(object.created_at).toLocaleDateString(
-                              locale === 'ro' ? 'ro-RO' : 'en-US'
-                            )}
-                          </span>
+                          {object.distance_km !== undefined ? (
+                            <span className="text-blue-600 font-medium">
+                              {object.distance_km} km
+                            </span>
+                          ) : (
+                            <span>
+                              {new Date(object.created_at).toLocaleDateString(
+                                locale === 'ro' ? 'ro-RO' : 'en-US'
+                              )}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
