@@ -2,6 +2,19 @@
   "common": {
     "home": "Acasă",
     "signup": "Înregistrare",
-    "login": "Autentificare"
+    "login": "Autentificare",
+    "objects": "Obiecte",
+    "subcategories": "subcategorii",
+    "back": "Înapoi"
+  },
+  "category": {
+    "searchPlaceholder": "Caută categorii...",
+    "aiSuggestions": "Sugestii AI bazate pe descriere",
+    "searchResults": "Rezultate căutare",
+    "noResults": "Nu am găsit categorii",
+    "tryDifferentKeywords": "Încearcă alte cuvinte cheie",
+    "mainCategories": "Categorii principale",
+    "selectCategory": "Selectează categoria",
+    "categorySelected": "Categorie selectată"
   }
 }
