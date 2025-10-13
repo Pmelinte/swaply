@@ -28,10 +28,10 @@ export async function GET(request: Request) {
   // Handle both PKCE code flow AND magic link token flow
   if (code || token_hash) {
     try {
-      // Create response first
-      const response = NextResponse.redirect(`${url.origin}${next}`);
+      // Store cookies to set manually
+      const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
       
-      // Create Supabase client with cookie handling that uses NextResponse
+      // Create Supabase client with cookie handling
       const supabase = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -43,22 +43,10 @@ export async function GET(request: Request) {
                 ?.split('=')[1];
             },
             set(name: string, value: string, options: any) {
-              response.cookies.set({
-                name,
-                value,
-                ...options,
-                httpOnly: true,
-                sameSite: 'lax',
-                secure: process.env.NODE_ENV === 'production',
-              });
+              cookiesToSet.push({ name, value, options });
             },
             remove(name: string, options: any) {
-              response.cookies.set({
-                name,
-                value: '',
-                maxAge: 0,
-                ...options,
-              });
+              cookiesToSet.push({ name, value: '', options: { ...options, maxAge: 0 } });
             },
           },
         }
@@ -87,7 +75,23 @@ export async function GET(request: Request) {
 
       console.log('✅ Auth callback successful, user:', data.user?.email);
       
-      // Response already created with cookies set by Supabase client
+      // Create response and set all cookies
+      const response = NextResponse.redirect(`${url.origin}${next}`);
+      
+      // Set all cookies collected during Supabase operations
+      for (const cookie of cookiesToSet) {
+        response.cookies.set({
+          name: cookie.name,
+          value: cookie.value,
+          ...cookie.options,
+          httpOnly: true,
+          sameSite: 'lax' as const,
+          secure: process.env.NODE_ENV === 'production',
+        });
+      }
+      
+      console.log('🍪 Set cookies:', cookiesToSet.length);
+      
       return response;
     } catch (err) {
       console.error('🔴 Unexpected auth error:', err);
