@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/lib/supabase/types";
 
@@ -7,101 +8,85 @@ import type { Database } from "@/lib/supabase/types";
  * Handles: Google OAuth, Magic Link, Phone OTP
  */
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const code = url.searchParams.get("code");
-  const token_hash = url.searchParams.get("token_hash");
-  const type = url.searchParams.get("type");
-  const next = url.searchParams.get("next") ?? "/";
-  const error = url.searchParams.get("error");
-  const error_description = url.searchParams.get("error_description");
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const token_hash = searchParams.get("token_hash");
+  const type = searchParams.get("type");
+  const next = searchParams.get("next") ?? "/";
+  const error = searchParams.get("error_description");
 
-  console.log('🔍 Auth callback params:', { code: !!code, token_hash: !!token_hash, type });
-
-  // Handle error from Supabase
   if (error) {
-    console.error('🔴 Auth callback error:', error, error_description);
+    console.error("🔴 Auth callback error:", error);
     return NextResponse.redirect(
-      `${url.origin}/login?error=${encodeURIComponent(error_description || error)}`
+      `${origin}/login?error=${encodeURIComponent(error)}`
     );
   }
 
-  // Handle both PKCE code flow AND magic link token flow
-  if (code || token_hash) {
-    try {
-      // Store cookies to set manually
-      const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
-      
-      // Create Supabase client with cookie handling
-      const supabase = createServerClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            get(name: string) {
-              return request.headers.get('cookie')?.split('; ')
-                .find(c => c.startsWith(`${name}=`))
-                ?.split('=')[1];
-            },
-            set(name: string, value: string, options: any) {
-              cookiesToSet.push({ name, value, options });
-            },
-            remove(name: string, options: any) {
-              cookiesToSet.push({ name, value: '', options: { ...options, maxAge: 0 } });
-            },
-          },
-        }
-      );
+  const cookieStore = cookies();
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
 
-      const { data, error: exchangeError } = code 
-        ? await supabase.auth.exchangeCodeForSession(code)
-        : await supabase.auth.verifyOtp({ 
-            token_hash: token_hash!, 
-            type: type as any 
-          });
-      
-      if (exchangeError) {
-        console.error('🔴 Exchange code error:', exchangeError);
-        return NextResponse.redirect(
-          `${url.origin}/login?error=${encodeURIComponent(exchangeError.message)}`
-        );
-      }
+  let sessionData;
 
-      if (!data.session) {
-        console.error('🔴 No session created');
-        return NextResponse.redirect(
-          `${url.origin}/login?error=no_session_created`
-        );
-      }
-
-      console.log('✅ Auth callback successful, user:', data.user?.email);
-      
-      // Create response and set all cookies
-      const response = NextResponse.redirect(`${url.origin}${next}`);
-      
-      // Set all cookies collected during Supabase operations
-      for (const cookie of cookiesToSet) {
-        response.cookies.set({
-          name: cookie.name,
-          value: cookie.value,
-          ...cookie.options,
-          httpOnly: true,
-          sameSite: 'lax' as const,
-          secure: process.env.NODE_ENV === 'production',
-        });
-      }
-      
-      console.log('🍪 Set cookies:', cookiesToSet.length);
-      
-      return response;
-    } catch (err) {
-      console.error('🔴 Unexpected auth error:', err);
+  if (code) {
+    console.log("🔍 Auth callback: Exchanging code for session...");
+    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(
+      code
+    );
+    if (exchangeError) {
+      console.error("🔴 Exchange code error:", exchangeError.message);
       return NextResponse.redirect(
-        `${url.origin}/login?error=unexpected_error`
+        `${origin}/login?error=${encodeURIComponent(exchangeError.message)}`
       );
     }
+    sessionData = data;
+  } else if (token_hash && type) {
+    console.log(`🔍 Auth callback: Verifying OTP with type "${type}"...`);
+    const { data, error: otpError } = await supabase.auth.verifyOtp({
+      token_hash,
+      type: type as any, // email or phone
+    });
+    if (otpError) {
+      console.error("🔴 OTP verification error:", otpError.message);
+      return NextResponse.redirect(
+        `${origin}/login?error=${encodeURIComponent(otpError.message)}`
+      );
+    }
+    sessionData = data;
+  } else {
+    console.error("🔴 Auth callback: No code or token_hash provided.");
+    return NextResponse.redirect(
+      `${origin}/login?error=auth_params_missing`
+    );
   }
 
-  // No code or token provided, redirect to login
-  console.log('🔴 No code or token in callback URL');
-  return NextResponse.redirect(`${url.origin}/login?error=no_auth_data_provided`);
+  if (!sessionData?.session) {
+    console.error("🔴 Auth callback: No session created after exchange/verify.");
+    return NextResponse.redirect(
+      `${origin}/login?error=session_creation_failed`
+    );
+  }
+
+  console.log(
+    "✅ Auth callback successful, user:",
+    sessionData.user?.email,
+    "Redirecting to:",
+    next
+  );
+  return NextResponse.redirect(`${origin}${next}`);
 }
