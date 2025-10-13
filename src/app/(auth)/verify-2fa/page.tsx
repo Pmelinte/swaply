@@ -6,6 +6,9 @@ import { getBrowserSupabase } from '@/lib/supabase/client';
 import { useI18n } from '@/lib/i18n';
 import { verifyTOTP, verifyBackupCode } from '@/lib/auth/2fa-login';
 
+// Force dynamic rendering for useSearchParams()
+export const dynamic = 'force-dynamic';
+
 /**
  * 2FA Verification Page - Content Component
  * 

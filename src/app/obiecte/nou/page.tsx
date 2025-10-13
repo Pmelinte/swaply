@@ -8,6 +8,9 @@ import MultiImageUpload from '@/components/MultiImageUpload';
 import SEOPreview from '@/components/SEOPreview';
 import { useI18n } from '@/lib/i18n';
 
+// Force dynamic rendering to prevent prerender errors
+export const dynamic = 'force-dynamic';
+
 interface AIAnalysis {
   category?: string;
   suggestedTitle?: string;
