@@ -107,13 +107,23 @@ function LoginForm() {
           } else {
             setError(error.message);
           }
-        } else {
-          // Setează flag-ul pentru AuthContext să știe că user tocmai s-a logat
-          sessionStorage.setItem('swaply_just_logged_in', 'true');
-          
-          // Redirect to home page after successful login
-          router.push('/');
-          router.refresh();
+        } else if (data?.user) {
+          // Check if user has 2FA enabled
+          const { data: has2FA } = await supabase.rpc('user_has_2fa_enabled', {
+            p_user_id: data.user.id,
+          });
+
+          if (has2FA) {
+            // User has 2FA enabled - redirect to verification page
+            // Sign out temporarily (will complete auth after 2FA verification)
+            await supabase.auth.signOut();
+            router.push(`/verify-2fa?userId=${data.user.id}`);
+          } else {
+            // No 2FA - complete authentication
+            sessionStorage.setItem('swaply_just_logged_in', 'true');
+            router.push('/');
+            router.refresh();
+          }
         }
       }
     } catch (err) {
