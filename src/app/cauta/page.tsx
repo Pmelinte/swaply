@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getBrowserSupabase } from '@/lib/supabase/client';
 import { useI18n } from '@/lib/i18n';
@@ -44,7 +44,7 @@ const DISTANCE_OPTIONS = [
   { value: 999999, label: { ro: 'Toată țara', en: 'Entire country' } },
 ];
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, locale } = useI18n();
@@ -551,5 +551,19 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">
+          Se încarcă rezultatele...
+        </div>
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 }
