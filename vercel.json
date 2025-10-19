@@ -1,14 +1,10 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm run build || true",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "regions": ["fra1"],
-  "functions": {
-    "src/app/**/*.tsx": {
-      "maxDuration": 30
-    }
-  },
+  
   "crons": [
     {
       "path": "/api/cron/rating-reminders",
