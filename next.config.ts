@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(__dirname);
 
 // Check if running in CI with demo env
 const isCI = process.env.CI === 'true' && process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('example');
@@ -8,8 +11,6 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
   poweredByHeader: false,
   compress: true,
-  optimizeFonts: true,
-  swcMinify: true,
   outputFileTracingRoot: __dirname,
   // Skip static generation in CI
   ...(isCI && { 
@@ -69,9 +70,6 @@ const nextConfig: NextConfig = {
     ],
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
-  },
-  experimental: {
-    optimizeCss: true,
   },
 };
 
