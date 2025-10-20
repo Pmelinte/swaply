@@ -4,7 +4,6 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getBrowserSupabase } from '@/lib/supabase/client';
 
-const PKCE_STORAGE_PREFIX = 'swaply_pkce_';
 const LOG_ENDPOINT = '/api/debug/auth';
 const LOGGING_ENABLED = process.env.NEXT_PUBLIC_LOG_AUTH_CALLBACK === '1';
 
@@ -37,47 +36,12 @@ function reportAuthEvent(event: string, details: Record<string, unknown>) {
   }
 }
 
-function restorePkceStateFromLocalStorage() {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  let restored = false;
-  try {
-    Object.keys(window.localStorage)
-      .filter((key) => key.startsWith(PKCE_STORAGE_PREFIX))
-      .forEach((key) => {
-        const value = window.localStorage.getItem(key);
-        if (value) {
-          const sessionKey = key.replace(PKCE_STORAGE_PREFIX, '');
-          window.sessionStorage.setItem(sessionKey, value);
-          restored = true;
-        }
-      });
-  } catch (error) {
-    console.warn('⚠️ PKCE restore failed.', error);
-  }
-
-  return restored;
-}
-
-function clearPkceState() {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  Object.keys(window.localStorage)
-    .filter((key) => key.startsWith(PKCE_STORAGE_PREFIX))
-    .forEach((key) => window.localStorage.removeItem(key));
-}
-
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasHandledRef = useRef(false);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Se procesează autentificarea...');
-  const pkceRestoredRef = useRef(false);
 
   useEffect(() => {
     if (hasHandledRef.current) {
@@ -85,10 +49,9 @@ function AuthCallbackContent() {
     }
     hasHandledRef.current = true;
 
-    pkceRestoredRef.current = restorePkceStateFromLocalStorage();
     const initDetails = {
       pathname: typeof window !== 'undefined' ? window.location.pathname : null,
-      pkceRestored: pkceRestoredRef.current,
+      storage: 'localStorage', // PKCE now managed by Supabase in localStorage
     };
     console.log('🔁 Auth callback initialized.', initDetails);
     reportAuthEvent('callback:init', initDetails);
@@ -117,7 +80,6 @@ function AuthCallbackContent() {
       if (next && next !== '/') {
         errorUrl.searchParams.set('redirect', next);
       }
-      clearPkceState();
       reportAuthEvent('callback:error', {
         errorMessage,
         next,
@@ -197,11 +159,8 @@ function AuthCallbackContent() {
           }
 
           if (code) {
-            const exchangeDetails = {
-              pkceRestored: pkceRestoredRef.current,
-            };
-            console.log('🔄 Supabase exchangeCodeForSession start.', exchangeDetails);
-            reportAuthEvent('callback:exchange:start', exchangeDetails);
+            console.log('🔄 Supabase exchangeCodeForSession start.');
+            reportAuthEvent('callback:exchange:start', { method: 'PKCE' });
             const { error } = await supabase.auth.exchangeCodeForSession(code);
 
             if (error) {
@@ -226,7 +185,7 @@ function AuthCallbackContent() {
             } else {
               otpAlreadyVerified = true;
               console.log('✅ Supabase exchangeCodeForSession succeeded.');
-              reportAuthEvent('callback:exchange:success', exchangeDetails);
+              reportAuthEvent('callback:exchange:success', { method: 'PKCE' });
             }
           } else if (!tokenHash) {
             redirectWithError('Parametri de autentificare lipsă.');
@@ -236,7 +195,6 @@ function AuthCallbackContent() {
 
         setStatus('success');
         setMessage('Autentificare reușită. Redirecționare...');
-        clearPkceState();
         reportAuthEvent('callback:success', { next });
         router.replace(next);
         router.refresh();

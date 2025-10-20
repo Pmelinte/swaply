@@ -4,12 +4,25 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/supabase/client';
-import { useI18n } from '@/lib/i18n';
+
+const resolveSiteUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+
+  if (envUrl && envUrl.startsWith('http')) {
+    return envUrl;
+  }
+
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  return '';
+};
 
 function LoginForm() {
-  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') ?? '/';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -21,6 +34,9 @@ function LoginForm() {
     otp: '',
   });
   const [otpSent, setOtpSent] = useState(false);
+
+  // PKCE is now automatically persisted in localStorage via browser.ts configuration
+  // No need for manual persistence logic
 
   // Check for errors from callback
   useEffect(() => {
@@ -38,13 +54,22 @@ function LoginForm() {
 
     try {
       const supabase = getBrowserSupabase();
+      const siteUrl = resolveSiteUrl();
+
+      if (!siteUrl) {
+        throw new Error('Nu putem determina domeniul pentru redirect. Verifică NEXT_PUBLIC_SITE_URL.');
+      }
+
+      const callbackUrl = `${siteUrl}/auth/callback?next=${encodeURIComponent(redirectTarget)}`;
+      console.log('📨 signInWithOtp will use redirect:', callbackUrl);
       
       if (authMethod === 'magic') {
         // Magic Link authentication - let Supabase handle flow type automatically
-        const { error } = await supabase.auth.signInWithOtp({
+
+          const { error } = await supabase.auth.signInWithOtp({
           email: formData.email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+              emailRedirectTo: callbackUrl,
             shouldCreateUser: false, // Don't create user automatically
           },
         });
@@ -67,6 +92,7 @@ function LoginForm() {
             phone: formData.phone,
             options: {
               shouldCreateUser: false,
+              emailRedirectTo: callbackUrl,
             },
           });
 
@@ -88,7 +114,7 @@ function LoginForm() {
             setError(`❌ ${error.message}`);
           } else {
             sessionStorage.setItem('swaply_just_logged_in', 'true');
-            router.push('/');
+            router.push(redirectTarget);
             router.refresh();
           }
         }
@@ -117,11 +143,11 @@ function LoginForm() {
             // User has 2FA enabled - redirect to verification page
             // Sign out temporarily (will complete auth after 2FA verification)
             await supabase.auth.signOut();
-            router.push(`/verify-2fa?userId=${data.user.id}`);
+            router.push(`/verify-2fa?userId=${data.user.id}&redirect=${encodeURIComponent(redirectTarget)}`);
           } else {
             // No 2FA - complete authentication
             sessionStorage.setItem('swaply_just_logged_in', 'true');
-            router.push('/');
+            router.push(redirectTarget);
             router.refresh();
           }
         }
@@ -140,10 +166,19 @@ function LoginForm() {
 
     try {
       const supabase = getBrowserSupabase();
+      const siteUrl = resolveSiteUrl();
+
+      if (!siteUrl) {
+        throw new Error('Nu putem determina domeniul pentru redirect. Verifică NEXT_PUBLIC_SITE_URL.');
+      }
+
+      const oauthRedirect = `${siteUrl}/auth/callback?next=${encodeURIComponent(redirectTarget)}`;
+      console.log('🔗 signInWithOAuth will use redirect:', oauthRedirect);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: oauthRedirect,
         },
       });
 

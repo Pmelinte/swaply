@@ -12,12 +12,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   outputFileTracingRoot: __dirname,
-  // Skip static generation in CI
-  ...(isCI && { 
-    experimental: {
-      isrMemoryCacheSize: 0,
-    },
-  }),
   async redirects() {
     return [
       { 
