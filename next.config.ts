@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
   poweredByHeader: false,
   compress: true,
+  output: 'standalone',
   outputFileTracingRoot: __dirname,
   async redirects() {
     return [
